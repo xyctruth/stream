@@ -10,7 +10,7 @@ jobs:
   server-test:
     strategy:
       matrix:
-        go: ['1.18']
+        go: ['1.18rc1']
         platform: [ubuntu-latest]
     runs-on: ${{ matrix.platform }}
 
