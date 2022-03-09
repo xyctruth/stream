@@ -12,6 +12,19 @@ func NewSlice[Elem any](v []Elem) sliceStream[Elem] {
 	return sliceStream[Elem]{slice: v}
 }
 
+// At Returns the element at the given index. Accepts negative integers, which count back from the last item.
+func (stream sliceStream[Elem]) At(index int) Elem {
+	l := len(stream.slice)
+	if index < 0 {
+		index = index + l
+	}
+	if l == 0 || index < 0 || index >= l {
+		var defaultVal Elem
+		return defaultVal
+	}
+	return stream.slice[index]
+}
+
 // AllMatch Returns whether all elements in the stream match the provided predicate.
 // If the slice is empty or nil then true is returned
 func (stream sliceStream[Elem]) AllMatch(predicate func(Elem) bool) bool {

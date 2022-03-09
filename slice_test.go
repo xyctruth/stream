@@ -32,6 +32,57 @@ func TestNewSliceStream(t *testing.T) {
 	}
 }
 
+func TestSliceAt(t *testing.T) {
+	tests := []struct {
+		name  string
+		input []int
+		index int
+		want  int
+	}{
+		{
+			name:  "normal",
+			input: []int{1, 2, 3},
+			index: 1,
+			want:  2,
+		},
+		{
+			name:  "normal2",
+			input: []int{1, 2, 3},
+			index: -1,
+			want:  3,
+		},
+		{
+			name:  "normal3",
+			input: []int{1, 2, 3},
+			index: 5,
+			want:  0,
+		},
+		{
+			name:  "normal4",
+			input: []int{1, 2, 3},
+			index: -4,
+			want:  0,
+		},
+		{
+			name:  "empty",
+			input: []int{},
+			index: 0,
+			want:  0,
+		},
+		{
+			name:  "nil",
+			input: nil,
+			want:  0,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := NewSlice(tt.input).At(tt.index)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
 func TestSliceAllMatch(t *testing.T) {
 	tests := []struct {
 		name      string
