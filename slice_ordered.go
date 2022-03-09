@@ -9,12 +9,20 @@ type sliceOrderedStream[Elem constraints.Ordered] struct {
 	sliceComparableStream[Elem]
 }
 
+// NewSliceByOrdered new stream instance, generics constraints based on constraints.Ordered
 func NewSliceByOrdered[Elem constraints.Ordered](v []Elem) sliceOrderedStream[Elem] {
 	return sliceOrderedStream[Elem]{sliceComparableStream: NewSliceByComparable(v)}
 }
 
-// Max Returns the maximum element of this stream according to the constraints.Ordered
-// If the slice is empty or nil then Elem Type default value is returned
+// Parallel cores > 1 enable parallel, cores <= 1 disable parallel
+func (stream sliceOrderedStream[Elem]) Parallel(cores int) sliceOrderedStream[Elem] {
+	stream.sliceComparableStream = stream.sliceComparableStream.Parallel(cores)
+	return stream
+}
+
+// Max Returns the maximum element of this stream.
+// Compare according to the constraints.Ordered.
+// If the slice is empty or nil then Elem Type default value is returned.
 func (stream sliceOrderedStream[Elem]) Max() Elem {
 	var max Elem
 	for _, v := range stream.slice {
@@ -25,8 +33,9 @@ func (stream sliceOrderedStream[Elem]) Max() Elem {
 	return max
 }
 
-// Min Returns the minimum element of this stream according to the constraints.Ordered
-// If the slice is empty or nil then Elem Type default value is returned
+// Min Returns the minimum element of this stream.
+// Compare according to the constraints.Ordered.
+// If the slice is empty or nil then Elem Type default value is returned.
 func (stream sliceOrderedStream[Elem]) Min() Elem {
 	var min Elem
 	for i, v := range stream.slice {
@@ -37,13 +46,15 @@ func (stream sliceOrderedStream[Elem]) Min() Elem {
 	return min
 }
 
-// Sort Returns a stream consisting of the elements of this stream, sorted according to slices.Sort.
+// Sort Returns a sorted stream consisting of the elements of this stream.
+// Sorted according to slices.Sort.
 func (stream sliceOrderedStream[Elem]) Sort() sliceOrderedStream[Elem] {
 	slices.Sort(stream.slice)
 	return stream
 }
 
-// Distinct Returns a stream consisting of the distinct elements (according to map comparable ) of this stream.
+// Distinct Returns a stream consisting of the distinct elements of this stream.
+// Remove duplicate according to map comparable.
 func (stream sliceOrderedStream[Elem]) Distinct() sliceOrderedStream[Elem] {
 	stream.sliceComparableStream = stream.sliceComparableStream.Distinct()
 	return stream
@@ -73,13 +84,15 @@ func (stream sliceOrderedStream[Elem]) Map(mapper func(Elem) Elem) sliceOrderedS
 	return stream
 }
 
-// SortFunc Returns a stream consisting of the elements of this stream, sorted according to slices.SortFunc.
+// SortFunc Returns a sorted stream consisting of the elements of this stream.
+// Sorted according to slices.SortFunc.
 func (stream sliceOrderedStream[Elem]) SortFunc(less func(a, b Elem) bool) sliceOrderedStream[Elem] {
 	stream.sliceComparableStream = stream.sliceComparableStream.SortFunc(less)
 	return stream
 }
 
-// SortStableFunc Returns a stream consisting of the elements of this stream, sorted according to slices.SortStableFunc.
+// SortStableFunc Returns a sorted stream consisting of the elements of this stream.
+// Sorted according to slices.SortStableFunc.
 func (stream sliceOrderedStream[Elem]) SortStableFunc(less func(a, b Elem) bool) sliceOrderedStream[Elem] {
 	stream.sliceComparableStream = stream.sliceComparableStream.SortStableFunc(less)
 	return stream

@@ -9,7 +9,9 @@ Stream is a stream library based on golang 1.18 generics (manipulate slice like 
 
 ## Getting Started
 
-### Constraints `any`
+### Constraints 
+
+#### any
 
 ```go
 s1 := stream.NewSlice([]string{"d", "a", "b", "c", "a"}).
@@ -17,39 +19,33 @@ s1 := stream.NewSlice([]string{"d", "a", "b", "c", "a"}).
     Map(func(s string) string { return "class_" + s }).
     SortFunc(func(s1, s2 string) bool { return s1 < s2 }).
     ToSlice()
-
-fmt.Println(s1)
-
-//output: [class_a class_a class_c class_d]
 ```
 
-### Constraints `comparable`
+#### comparable
 
 ```go
 s2 := stream.NewSliceByComparable([]string{"d", "a", "b", "c", "a"}).
-    Filter(func(s string) bool { return s != "b" }).
-    Map(func(s string) string { return "class_" + s }).
-    SortFunc(func(s1, s2 string) bool { return s1 < s2 }).
     Distinct().
     ToSlice()
-
-fmt.Println(s2)
-
-//output:[class_a class_c class_d]
 ```
 
-### Constraints `constraints.Ordered`
+#### constraints.Ordered
 
 ```go
 s3 := stream.NewSliceByOrdered([]string{"d", "a", "b", "c", "a"}).
+    Sort().
+    Distinct().
+    ToSlice()
+```
+
+### Parallel
+
+```go
+s4 := stream.NewSliceByOrdered([]string{"d", "a", "b", "c", "a"}).
+    Parallel(10).
     Filter(func(s string) bool { return s != "b" }).
     Map(func(s string) string { return "class_" + s }).
     Sort().
     Distinct().
     ToSlice()
-
-fmt.Println(s3)
-
-//output: [class_a class_c class_d]
 ```
-

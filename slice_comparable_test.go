@@ -91,3 +91,49 @@ func TestSliceComparableEqual(t *testing.T) {
 		})
 	}
 }
+
+func TestSliceComparableFind(t *testing.T) {
+	tests := []struct {
+		name  string
+		input []int
+		dest  int
+		want  int
+	}{
+		{
+			name:  "normal",
+			input: []int{1, 2, 1, 2, 1},
+			dest:  1,
+			want:  0,
+		},
+		{
+			name:  "normal",
+			input: []int{1, 2, 1, 2, 1},
+			dest:  2,
+			want:  1,
+		},
+		{
+			name:  "normal",
+			input: []int{1, 2},
+			dest:  3,
+			want:  -1,
+		},
+		{
+			name:  "empty",
+			input: []int{},
+			dest:  1,
+			want:  -1,
+		},
+		{
+			name:  "nil",
+			input: nil,
+			dest:  1,
+			want:  -1,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := NewSliceByComparable(tt.input).Find(tt.dest)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}

@@ -1,9 +1,8 @@
 package stream
 
 import (
-	"testing"
-
 	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
 func TestNewSliceStream(t *testing.T) {
@@ -68,6 +67,9 @@ func TestSliceAllMatch(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got := NewSlice(tt.input).AllMatch(tt.predicate)
 			assert.Equal(t, tt.want, got)
+
+			got = NewSlice(tt.input).Parallel(10).AllMatch(tt.predicate)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -107,6 +109,9 @@ func TestSliceAnyMatch(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := NewSlice(tt.input).AnyMatch(tt.predicate)
+			assert.Equal(t, tt.want, got)
+
+			got = NewSlice(tt.input).Parallel(10).AnyMatch(tt.predicate)
 			assert.Equal(t, tt.want, got)
 		})
 	}
@@ -214,6 +219,52 @@ func TestSliceForEach(t *testing.T) {
 	}
 }
 
+func TestSliceFindFunc(t *testing.T) {
+	tests := []struct {
+		name      string
+		input     []int
+		predicate func(v int) bool
+		want      int
+	}{
+		{
+			name:      "normal",
+			input:     []int{1, 2, 1, 2, 1},
+			predicate: func(v int) bool { return v == 1 },
+			want:      0,
+		},
+		{
+			name:      "normal",
+			input:     []int{1, 2, 1, 2, 1},
+			predicate: func(v int) bool { return v == 2 },
+			want:      1,
+		},
+		{
+			name:      "normal",
+			input:     []int{1, 2},
+			predicate: func(v int) bool { return v == 3 },
+			want:      -1,
+		},
+		{
+			name:      "empty",
+			input:     []int{},
+			predicate: func(v int) bool { return v == 1 },
+			want:      -1,
+		},
+		{
+			name:      "nil",
+			input:     nil,
+			predicate: func(v int) bool { return v == 1 },
+			want:      -1,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := NewSlice(tt.input).FindFunc(tt.predicate)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
 func TestSliceFilter(t *testing.T) {
 	tests := []struct {
 		name      string
@@ -245,10 +296,19 @@ func TestSliceFilter(t *testing.T) {
 			got := NewSlice(tt.input).Filter(tt.predicate).ToSlice()
 			assert.Equal(t, tt.want, got)
 
+			got = NewSlice(tt.input).Parallel(10).Filter(tt.predicate).ToSlice()
+			assert.Equal(t, tt.want, got)
+
 			got = NewSliceByComparable(tt.input).Filter(tt.predicate).ToSlice()
 			assert.Equal(t, tt.want, got)
 
+			got = NewSliceByComparable(tt.input).Parallel(10).Filter(tt.predicate).ToSlice()
+			assert.Equal(t, tt.want, got)
+
 			got = NewSliceByOrdered(tt.input).Filter(tt.predicate).ToSlice()
+			assert.Equal(t, tt.want, got)
+
+			got = NewSliceByOrdered(tt.input).Parallel(10).Filter(tt.predicate).ToSlice()
 			assert.Equal(t, tt.want, got)
 		})
 	}
