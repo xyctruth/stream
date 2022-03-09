@@ -34,8 +34,9 @@ jobs:
           go build -v ./...
 
       - name: Build examples
-        run: go build -v ./...
-        working-directory: _examples
+        run: |
+          cd _examples
+          go build -v ./...
 
 
 
