@@ -5,41 +5,6 @@ import (
 	"testing"
 )
 
-func TestSliceOrderedDistinct(t *testing.T) {
-	tests := []struct {
-		name  string
-		input []int
-		want  []int
-	}{
-		{
-			name:  "has distinct",
-			input: []int{1, 2, 1},
-			want:  []int{1, 2},
-		},
-		{
-			name:  "no distinct",
-			input: []int{1, 2, 3},
-			want:  []int{1, 2, 3},
-		},
-		{
-			name:  "empty",
-			input: []int{},
-			want:  []int{},
-		},
-		{
-			name:  "nil",
-			input: nil,
-			want:  nil,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := NewSliceByOrdered(tt.input).Distinct().Slice()
-			assert.Equal(t, tt.want, got)
-		})
-	}
-}
-
 func TestSliceOrderedMax(t *testing.T) {
 	tests := []struct {
 		name  string

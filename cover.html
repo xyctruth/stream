@@ -1,0 +1,418 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>stream: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">github.com/xyctruth/stream/slice.go (100.0%)</option>
+				
+				<option value="file1">github.com/xyctruth/stream/slice_comparable.go (100.0%)</option>
+				
+				<option value="file2">github.com/xyctruth/stream/slice_ordered.go (100.0%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">no coverage</span>
+				<span class="cov1">low coverage</span>
+				<span class="cov2">*</span>
+				<span class="cov3">*</span>
+				<span class="cov4">*</span>
+				<span class="cov5">*</span>
+				<span class="cov6">*</span>
+				<span class="cov7">*</span>
+				<span class="cov8">*</span>
+				<span class="cov9">*</span>
+				<span class="cov10">high coverage</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package stream
+
+import (
+        "golang.org/x/exp/slices"
+)
+
+type sliceStream[Elem any] struct {
+        slice []Elem
+}
+
+func NewSlice[Elem any](v []Elem) sliceStream[Elem] <span class="cov10" title="116">{
+        if v == nil </span><span class="cov7" title="29">{
+                return sliceStream[Elem]{}
+        }</span>
+        <span class="cov9" title="87">clone := make([]Elem, len(v))
+        copy(clone, v)
+        return sliceStream[Elem]{slice: clone}</span>
+}
+
+// AllMatch Returns whether all elements in the stream match the provided predicate.
+// If the slice is empty or nil then true is returned
+func (stream sliceStream[Elem]) AllMatch(predicate func(Elem) bool) bool <span class="cov3" title="4">{
+        for _, v := range stream.slice </span><span class="cov3" title="3">{
+                if !predicate(v) </span><span class="cov1" title="1">{
+                        return false
+                }</span>
+        }
+        <span class="cov3" title="3">return true</span>
+}
+
+// AnyMatch Returns whether any elements in the stream match the provided predicate.
+// If the slice is empty or nil then false is returned
+func (stream sliceStream[Elem]) AnyMatch(predicate func(Elem) bool) bool <span class="cov3" title="4">{
+        for _, v := range stream.slice </span><span class="cov3" title="3">{
+                if predicate(v) </span><span class="cov1" title="1">{
+                        return true
+                }</span>
+        }
+        <span class="cov3" title="3">return false</span>
+}
+
+// Count Returns the count of elements in this stream.
+func (stream sliceStream[Elem]) Count() int <span class="cov3" title="3">{
+        return len(stream.slice)
+}</span>
+
+// EqualFunc Returns whether the slice in the stream is equal to the destination slice.
+// according to the slices.EqualFunc
+func (stream sliceStream[Elem]) EqualFunc(slice []Elem, eq func(Elem, Elem) bool) bool <span class="cov4" title="5">{
+        return slices.EqualFunc(stream.slice, slice, eq)
+}</span>
+
+// ForEach Performs an action for each element of this stream.
+func (stream sliceStream[Elem]) ForEach(action func(int, Elem)) sliceStream[Elem] <span class="cov3" title="3">{
+        for i, v := range stream.slice </span><span class="cov5" title="9">{
+                action(i, v)
+        }</span>
+        <span class="cov3" title="3">return stream</span>
+}
+
+// First Performs an action for each element of this stream.
+// If the slice is empty or nil then Elem Type default value is returned
+func (stream sliceStream[Elem]) First() Elem <span class="cov3" title="3">{
+        if len(stream.slice) == 0 </span><span class="cov2" title="2">{
+                var defaultVal Elem
+                return defaultVal
+        }</span>
+        <span class="cov1" title="1">return stream.slice[0]</span>
+}
+
+// Filter Returns a stream consisting of the elements of this stream that match the given predicate.
+func (stream sliceStream[Elem]) Filter(predicate func(Elem) bool) sliceStream[Elem] <span class="cov5" title="9">{
+        if stream.slice == nil </span><span class="cov3" title="3">{
+                return stream
+        }</span>
+
+        <span class="cov4" title="6">newSlice := make([]Elem, 0)
+        for _, v := range stream.slice </span><span class="cov5" title="12">{
+                if predicate(v) </span><span class="cov3" title="3">{
+                        newSlice = append(newSlice, v)
+                }</span>
+        }
+        <span class="cov4" title="6">stream.slice = newSlice
+        return stream</span>
+}
+
+// Limit Returns a stream consisting of the elements of this stream, truncated to be no longer than maxSize in length.
+func (stream sliceStream[Elem]) Limit(maxSize int) sliceStream[Elem] <span class="cov6" title="18">{
+        if stream.slice == nil </span><span class="cov3" title="3">{
+                return stream
+        }</span>
+
+        <span class="cov6" title="15">newSlice := make([]Elem, 0)
+        for i := 0; i &lt; len(stream.slice) &amp;&amp; i &lt; maxSize; i++ </span><span class="cov7" title="24">{
+                newSlice = append(newSlice, stream.slice[i])
+        }</span>
+        <span class="cov6" title="15">stream.slice = newSlice
+        return stream</span>
+}
+
+// Map Returns a stream consisting of the results of applying the given function to the elements of this stream.
+func (stream sliceStream[Elem]) Map(mapper func(Elem) Elem) sliceStream[Elem] <span class="cov5" title="9">{
+        if stream.slice == nil </span><span class="cov3" title="3">{
+                return stream
+        }</span>
+        <span class="cov4" title="6">for i, v := range stream.slice </span><span class="cov5" title="9">{
+                stream.slice[i] = mapper(v)
+        }</span>
+        <span class="cov4" title="6">return stream</span>
+}
+
+// Reduce Returns a slice consisting of the elements of this stream
+func (stream sliceStream[Elem]) Reduce(accumulator func(Elem, Elem) Elem) Elem <span class="cov3" title="3">{
+        var result Elem
+        if len(stream.slice) == 0 </span><span class="cov2" title="2">{
+                return result
+        }</span>
+
+        <span class="cov1" title="1">for _, v := range stream.slice </span><span class="cov3" title="4">{
+                result = accumulator(result, v)
+        }</span>
+        <span class="cov1" title="1">return result</span>
+}
+
+// SortFunc Returns a stream consisting of the elements of this stream, sorted according to slices.SortFunc.
+func (stream sliceStream[Elem]) SortFunc(less func(a, b Elem) bool) sliceStream[Elem] <span class="cov5" title="12">{
+        slices.SortFunc(stream.slice, less)
+        return stream
+}</span>
+
+// SortStableFunc Returns a stream consisting of the elements of this stream, sorted according to slices.SortStableFunc.
+func (stream sliceStream[Elem]) SortStableFunc(less func(a, b Elem) bool) sliceStream[Elem] <span class="cov5" title="12">{
+        slices.SortStableFunc(stream.slice, less)
+        return stream
+}</span>
+
+// ToSlice Returns a slice consisting of the elements of this stream
+func (stream sliceStream[Elem]) ToSlice() []Elem <span class="cov9" title="73">{
+        return stream.slice
+}</span>
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package stream
+
+import "golang.org/x/exp/slices"
+
+type sliceComparableStream[Elem comparable] struct {
+        sliceStream[Elem]
+}
+
+func NewSliceByComparable[Elem comparable](v []Elem) sliceComparableStream[Elem] <span class="cov10" title="71">{
+        return sliceComparableStream[Elem]{sliceStream: NewSlice(v)}
+}</span>
+
+// Distinct Returns a stream consisting of the distinct elements (according to map comparable ) of this stream.
+func (stream sliceComparableStream[Elem]) Distinct() sliceComparableStream[Elem] <span class="cov5" title="8">{
+        if stream.slice == nil </span><span class="cov2" title="2">{
+                return stream
+        }</span>
+
+        <span class="cov4" title="6">newSlice := make([]Elem, 0)
+        distinct := map[Elem]struct{}{}
+        for _, v := range stream.slice </span><span class="cov6" title="12">{
+                if _, ok := distinct[v]; ok </span><span class="cov2" title="2">{
+                        continue</span>
+                }
+                <span class="cov5" title="10">distinct[v] = struct{}{}
+                newSlice = append(newSlice, v)</span>
+        }
+        <span class="cov4" title="6">stream.slice = newSlice
+        return stream</span>
+}
+
+// Equal Returns whether the slice in the stream is equal to the destination slice.
+// according to the slices.EqualFunc
+func (stream sliceComparableStream[Elem]) Equal(slice []Elem) bool <span class="cov5" title="10">{
+        return slices.Equal(stream.slice, slice)
+}</span>
+
+// ForEach Performs an action for each element of this stream.
+func (stream sliceComparableStream[Elem]) ForEach(action func(int, Elem)) sliceComparableStream[Elem] <span class="cov2" title="2">{
+        stream.sliceStream = stream.sliceStream.ForEach(action)
+        return stream
+}</span>
+
+// Filter Returns a stream consisting of the elements of this stream that match the given predicate.
+func (stream sliceComparableStream[Elem]) Filter(predicate func(Elem) bool) sliceComparableStream[Elem] <span class="cov4" title="6">{
+        stream.sliceStream = stream.sliceStream.Filter(predicate)
+        return stream
+}</span>
+
+// Limit Returns a stream consisting of the elements of this stream, truncated to be no longer than maxSize in length.
+func (stream sliceComparableStream[Elem]) Limit(maxSize int) sliceComparableStream[Elem] <span class="cov6" title="12">{
+        stream.sliceStream = stream.sliceStream.Limit(maxSize)
+        return stream
+}</span>
+
+// Map Returns a stream consisting of the results of applying the given function to the elements of this stream.
+func (stream sliceComparableStream[Elem]) Map(mapper func(Elem) Elem) sliceComparableStream[Elem] <span class="cov4" title="6">{
+        stream.sliceStream = stream.sliceStream.Map(mapper)
+        return stream
+}</span>
+
+// SortFunc Returns a stream consisting of the elements of this stream, sorted according to slices.SortFunc.
+func (stream sliceComparableStream[Elem]) SortFunc(less func(a, b Elem) bool) sliceComparableStream[Elem] <span class="cov5" title="8">{
+        stream.sliceStream = stream.sliceStream.SortFunc(less)
+        return stream
+}</span>
+
+// SortStableFunc Returns a stream consisting of the elements of this stream, sorted according to slices.SortStableFunc.
+func (stream sliceComparableStream[Elem]) SortStableFunc(less func(a, b Elem) bool) sliceComparableStream[Elem] <span class="cov5" title="8">{
+        stream.sliceStream = stream.sliceStream.SortStableFunc(less)
+        return stream
+}</span>
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">package stream
+
+import (
+        "golang.org/x/exp/constraints"
+        "golang.org/x/exp/slices"
+)
+
+type sliceOrderedStream[Elem constraints.Ordered] struct {
+        sliceComparableStream[Elem]
+}
+
+func NewSliceByOrdered[Elem constraints.Ordered](v []Elem) sliceOrderedStream[Elem] <span class="cov10" title="41">{
+        return sliceOrderedStream[Elem]{sliceComparableStream: NewSliceByComparable(v)}
+}</span>
+
+// Max Returns the maximum element of this stream according to the constraints.Ordered
+// If the slice is empty or nil then Elem Type default value is returned
+func (stream sliceOrderedStream[Elem]) Max() Elem <span class="cov4" title="4">{
+        var max Elem
+        for _, v := range stream.slice </span><span class="cov6" title="8">{
+                if v &gt; max </span><span class="cov4" title="4">{
+                        max = v
+                }</span>
+        }
+        <span class="cov4" title="4">return max</span>
+}
+
+// Min Returns the minimum element of this stream according to the constraints.Ordered
+// If the slice is empty or nil then Elem Type default value is returned
+func (stream sliceOrderedStream[Elem]) Min() Elem <span class="cov4" title="4">{
+        var min Elem
+        for i, v := range stream.slice </span><span class="cov6" title="8">{
+                if v &lt; min || i == 0 </span><span class="cov4" title="4">{
+                        min = v
+                }</span>
+        }
+        <span class="cov4" title="4">return min</span>
+}
+
+// Sort Returns a stream consisting of the elements of this stream, sorted according to slices.Sort.
+func (stream sliceOrderedStream[Elem]) Sort() sliceOrderedStream[Elem] <span class="cov3" title="3">{
+        slices.Sort(stream.slice)
+        return stream
+}</span>
+
+// Distinct Returns a stream consisting of the distinct elements (according to map comparable ) of this stream.
+func (stream sliceOrderedStream[Elem]) Distinct() sliceOrderedStream[Elem] <span class="cov4" title="4">{
+        stream.sliceComparableStream = stream.sliceComparableStream.Distinct()
+        return stream
+}</span>
+
+// ForEach Performs an action for each element of this stream.
+func (stream sliceOrderedStream[Elem]) ForEach(action func(int, Elem)) sliceOrderedStream[Elem] <span class="cov1" title="1">{
+        stream.sliceComparableStream = stream.sliceComparableStream.ForEach(action)
+        return stream
+}</span>
+
+// Filter Returns a stream consisting of the elements of this stream that match the given predicate.
+func (stream sliceOrderedStream[Elem]) Filter(predicate func(Elem) bool) sliceOrderedStream[Elem] <span class="cov3" title="3">{
+        stream.sliceComparableStream = stream.sliceComparableStream.Filter(predicate)
+        return stream
+}</span>
+
+// Limit Returns a stream consisting of the elements of this stream, truncated to be no longer than maxSize in length.
+func (stream sliceOrderedStream[Elem]) Limit(maxSize int) sliceOrderedStream[Elem] <span class="cov5" title="6">{
+        stream.sliceComparableStream = stream.sliceComparableStream.Limit(maxSize)
+        return stream
+}</span>
+
+// Map Returns a stream consisting of the results of applying the given function to the elements of this stream.
+func (stream sliceOrderedStream[Elem]) Map(mapper func(Elem) Elem) sliceOrderedStream[Elem] <span class="cov3" title="3">{
+        stream.sliceComparableStream = stream.sliceComparableStream.Map(mapper)
+        return stream
+}</span>
+
+// SortFunc Returns a stream consisting of the elements of this stream, sorted according to slices.SortFunc.
+func (stream sliceOrderedStream[Elem]) SortFunc(less func(a, b Elem) bool) sliceOrderedStream[Elem] <span class="cov4" title="4">{
+        stream.sliceComparableStream = stream.sliceComparableStream.SortFunc(less)
+        return stream
+}</span>
+
+// SortStableFunc Returns a stream consisting of the elements of this stream, sorted according to slices.SortStableFunc.
+func (stream sliceOrderedStream[Elem]) SortStableFunc(less func(a, b Elem) bool) sliceOrderedStream[Elem] <span class="cov4" title="4">{
+        stream.sliceComparableStream = stream.sliceComparableStream.SortStableFunc(less)
+        return stream
+}</span>
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>

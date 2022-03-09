@@ -34,13 +34,16 @@ func TestSliceComparableDistinct(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := NewSliceByComparable(tt.input).Distinct().Slice()
+			got := NewSliceByComparable(tt.input).Distinct().ToSlice()
+			assert.Equal(t, tt.want, got)
+
+			got = NewSliceByOrdered(tt.input).Distinct().ToSlice()
 			assert.Equal(t, tt.want, got)
 		})
 	}
 }
 
-func TestSliceEqual(t *testing.T) {
+func TestSliceComparableEqual(t *testing.T) {
 	tests := []struct {
 		name   string
 		input  []int
@@ -81,6 +84,9 @@ func TestSliceEqual(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := NewSliceByComparable(tt.input).Equal(tt.input2)
+			assert.Equal(t, tt.want, got)
+
+			got = NewSliceByOrdered(tt.input).Equal(tt.input2)
 			assert.Equal(t, tt.want, got)
 		})
 	}

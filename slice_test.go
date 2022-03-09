@@ -26,7 +26,7 @@ func TestNewSliceStream(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := NewSlice(tt.input).Slice()
+			got := NewSlice(tt.input).ToSlice()
 			assert.Equal(t, tt.want, got)
 		})
 	}
@@ -188,6 +188,32 @@ func TestSliceEqualFunc(t *testing.T) {
 	}
 }
 
+func TestSliceForEach(t *testing.T) {
+	tests := []struct {
+		name  string
+		input []int
+		want  []int
+	}{
+		{
+			name:  "normal",
+			input: []int{1, 2, 1},
+			want:  []int{1, 2, 1},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := NewSlice(tt.input).ForEach(func(i int, v int) { assert.Equal(t, tt.want[i], v) }).ToSlice()
+			assert.Equal(t, tt.want, got)
+
+			got = NewSliceByComparable(tt.input).ForEach(func(i int, v int) { assert.Equal(t, tt.want[i], v) }).ToSlice()
+			assert.Equal(t, tt.want, got)
+
+			got = NewSliceByOrdered(tt.input).ForEach(func(i int, v int) { assert.Equal(t, tt.want[i], v) }).ToSlice()
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
 func TestSliceFilter(t *testing.T) {
 	tests := []struct {
 		name      string
@@ -216,8 +242,14 @@ func TestSliceFilter(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := NewSlice(tt.input).Filter(tt.predicate)
-			assert.Equal(t, tt.want, got.slice)
+			got := NewSlice(tt.input).Filter(tt.predicate).ToSlice()
+			assert.Equal(t, tt.want, got)
+
+			got = NewSliceByComparable(tt.input).Filter(tt.predicate).ToSlice()
+			assert.Equal(t, tt.want, got)
+
+			got = NewSliceByOrdered(tt.input).Filter(tt.predicate).ToSlice()
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -298,8 +330,14 @@ func TestSliceLimit(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := NewSlice(tt.input).Limit(tt.limit)
-			assert.Equal(t, tt.want, got.slice)
+			got := NewSlice(tt.input).Limit(tt.limit).ToSlice()
+			assert.Equal(t, tt.want, got)
+
+			got = NewSliceByComparable(tt.input).Limit(tt.limit).ToSlice()
+			assert.Equal(t, tt.want, got)
+
+			got = NewSliceByOrdered(tt.input).Limit(tt.limit).ToSlice()
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -332,8 +370,14 @@ func TestSliceMap(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := NewSlice(tt.input).Map(tt.mapper)
-			assert.Equal(t, tt.want, got.slice)
+			got := NewSlice(tt.input).Map(tt.mapper).ToSlice()
+			assert.Equal(t, tt.want, got)
+
+			got = NewSliceByComparable(tt.input).Map(tt.mapper).ToSlice()
+			assert.Equal(t, tt.want, got)
+
+			got = NewSliceByOrdered(tt.input).Map(tt.mapper).ToSlice()
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -406,8 +450,14 @@ func TestSliceSortFunc(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := NewSlice(tt.input).SortFunc(tt.less)
-			assert.Equal(t, tt.want, got.slice)
+			got := NewSlice(tt.input).SortFunc(tt.less).ToSlice()
+			assert.Equal(t, tt.want, got)
+
+			got = NewSliceByComparable(tt.input).SortFunc(tt.less).ToSlice()
+			assert.Equal(t, tt.want, got)
+
+			got = NewSliceByOrdered(tt.input).SortFunc(tt.less).ToSlice()
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -446,8 +496,14 @@ func TestSliceSortStableFunc(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := NewSlice(tt.input).SortStableFunc(tt.less)
-			assert.Equal(t, tt.want, got.slice)
+			got := NewSlice(tt.input).SortStableFunc(tt.less).ToSlice()
+			assert.Equal(t, tt.want, got)
+
+			got = NewSliceByComparable(tt.input).SortStableFunc(tt.less).ToSlice()
+			assert.Equal(t, tt.want, got)
+
+			got = NewSliceByOrdered(tt.input).SortStableFunc(tt.less).ToSlice()
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }

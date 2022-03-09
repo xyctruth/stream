@@ -9,7 +9,12 @@ type sliceStream[Elem any] struct {
 }
 
 func NewSlice[Elem any](v []Elem) sliceStream[Elem] {
-	return sliceStream[Elem]{slice: v}
+	if v == nil {
+		return sliceStream[Elem]{}
+	}
+	clone := make([]Elem, len(v))
+	copy(clone, v)
+	return sliceStream[Elem]{slice: clone}
 }
 
 // AllMatch Returns whether all elements in the stream match the provided predicate.
@@ -117,11 +122,6 @@ func (stream sliceStream[Elem]) Reduce(accumulator func(Elem, Elem) Elem) Elem {
 	return result
 }
 
-// Slice Returns a slice consisting of the elements of this stream
-func (stream sliceStream[Elem]) Slice() []Elem {
-	return stream.slice
-}
-
 // SortFunc Returns a stream consisting of the elements of this stream, sorted according to slices.SortFunc.
 func (stream sliceStream[Elem]) SortFunc(less func(a, b Elem) bool) sliceStream[Elem] {
 	slices.SortFunc(stream.slice, less)
@@ -132,4 +132,9 @@ func (stream sliceStream[Elem]) SortFunc(less func(a, b Elem) bool) sliceStream[
 func (stream sliceStream[Elem]) SortStableFunc(less func(a, b Elem) bool) sliceStream[Elem] {
 	slices.SortStableFunc(stream.slice, less)
 	return stream
+}
+
+// ToSlice Returns a slice consisting of the elements of this stream
+func (stream sliceStream[Elem]) ToSlice() []Elem {
+	return stream.slice
 }
