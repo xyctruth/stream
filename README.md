@@ -5,7 +5,7 @@
 
 ## Introduction
 
-Stream is a stream library based on golang 1.18 generics (manipulate slice like java stream)
+Stream is a stream library based on golang 1.18 generics, support parallel. (manipulate slice like java stream)
 
 ## Getting Started
 
