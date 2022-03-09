@@ -1,4 +1,4 @@
-name: Test
+name: Build
 
 on:
   push:
@@ -35,7 +35,7 @@ jobs:
 
       - name: Build examples
         run: go build -v ./...
-        working-directory: ./_examples
+        working-directory: _examples
 
 
 
