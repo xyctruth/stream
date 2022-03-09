@@ -31,11 +31,7 @@ jobs:
 
       - name: Build
         run: |
-          go build -v ./...
-
-      - name: Build examples
-        run: |
-          cd _examples
+          pwd
           go build -v ./...
 
 
