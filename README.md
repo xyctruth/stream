@@ -9,33 +9,28 @@ Stream is a stream library based on golang 1.18 generics, support parallel. (man
 
 ## Getting Started
 
-### Constraints 
-
-#### any
+### Basic
 
 ```go
-s1 := stream.NewSlice([]string{"d", "a", "b", "c", "a"}).
+s := stream.NewSliceByOrdered([]string{"d", "a", "b", "c", "a"}).
     Filter(func(s string) bool { return s != "b" }).
     Map(func(s string) string { return "class_" + s }).
-    SortFunc(func(s1, s2 string) bool { return s1 < s2 }).
-    ToSlice()
-```
-
-#### comparable
-
-```go
-s2 := stream.NewSliceByComparable([]string{"d", "a", "b", "c", "a"}).
-    Distinct().
-    ToSlice()
-```
-
-#### constraints.Ordered
-
-```go
-s3 := stream.NewSliceByOrdered([]string{"d", "a", "b", "c", "a"}).
     Sort().
     Distinct().
     ToSlice()
+```
+
+### Constraints
+
+```go
+// any
+stream.NewSlice([]int{1, 2, 3, 7, 1})
+
+// comparable
+stream.NewSliceByComparable([]int{1, 2, 3, 7, 1})
+
+// constraints.Ordered
+stream.NewSliceByComparable([]int{1, 2, 3, 7, 1})
 ```
 
 ### Parallel
