@@ -21,7 +21,7 @@ jobs:
           stable: false
 
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: go mod package cache
         uses: actions/cache@v2
@@ -29,16 +29,13 @@ jobs:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-go-${{ matrix.go }}
 
-      - name: Test
+      - name: Build
         run: |
-          make test
+          go build -v ./...
 
-      - name: Codecov
-        uses: codecov/codecov-action@v2.1.0
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          file: ./cover.out
-          flags: unittests
-          name: codecov-umbrella
+      - name: Build examples
+        run: go build -v ./...
+        working-directory: ./_examples
+
 
 
