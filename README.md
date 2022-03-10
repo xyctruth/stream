@@ -22,13 +22,13 @@ s := stream.NewSliceByOrdered([]string{"d", "a", "b", "c", "a"}).
 
 ### Constraints
 
-`any`constraint means that any type of slice can be accepted, can't use `==` `!=` `>` `<` to compare elements, so you can't use `Sort()`, `Find()`... , but you can use `SortFunc(fn)`, `FindFunc(fn)`... instead of
+`any`constraint means that any type of slice can be accepted, can't use `==` `!=` `>` `<` to compare elements, so you can't use Sort(), Find()... , but you can use SortFunc(fn), FindFunc(fn)... instead of
 
 ```go
 stream.NewSlice([]int{1, 2, 3, 7, 1})
 ```
 
-`comparable` constraint accepts types that can use `==` `!=`, but still can't use `>` `<` to compare elements, so you can't use `SortFunc(fn)`... , but you can use `SortFunc (fn)`... instead of
+`comparable` constraint accepts types that can use `==` `!=`, but still can't use `>` `<` to compare elements, so you can't use SortFunc(fn)... , but you can use SortFunc (fn)... instead of
 
 ```go
 stream.NewSliceByComparable([]int{1, 2, 3, 7, 1})
@@ -42,7 +42,7 @@ stream.NewSliceByOrdered([]int{1, 2, 3, 7, 1})
 
 ### Parallel
 
-The `Parallel` function accepts a `goroutines int` parameter. If goroutines>1, create `goroutines` goroutines to execute, otherwise close Parallel, the stream closes Parallel by default.
+The Parallel function accepts a `goroutines int` parameter. If goroutines>1, create an equal number of goroutines to execute, otherwise close Parallel, the stream closes Parallel by default.
 
 ```go
 s := stream.NewSliceByOrdered([]string{"d", "a", "b", "c", "a"}).
