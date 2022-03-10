@@ -39,16 +39,16 @@ func (p parallel[Elem, TaskResult, Result]) process() Result {
 	if len(p.slice) > 0 {
 		partition := p.partition(p.slice, p.goroutines)
 		for _, s := range partition {
-			go p.consume(ctx, s)
+			go p.task(ctx, s)
 		}
 	}
 	result := p.resultHandler(p.taskResultCh)
 	return result
 }
 
-func (p parallel[Elem, TaskResult, Result]) consume(ctx context.Context, slice []Elem) {
+func (p parallel[Elem, TaskResult, Result]) task(ctx context.Context, slice []Elem) {
 	if p.isWaitAllDone {
-		var ret []TaskResult
+		ret := make([]TaskResult, 0, len(slice))
 		for _, elem := range slice {
 			ret = append(ret, p.handler(elem))
 		}

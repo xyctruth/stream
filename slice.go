@@ -153,7 +153,7 @@ func (stream sliceStream[Elem]) Filter(predicate func(Elem) bool) sliceStream[El
 			return nil
 		}
 		resultHandler := func(results chan []*Elem) []Elem {
-			newSlice := make([]Elem, 0)
+			newSlice := make([]Elem, 0, len(stream.slice))
 			for i := 0; i < len(stream.slice); {
 				result := <-results
 				for _, r := range result {
