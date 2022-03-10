@@ -49,15 +49,15 @@ func BenchmarkParallel(b *testing.B) {
 		}
 	})
 
-	b.Run("goroutine 8", func(b *testing.B) {
+	b.Run("goroutine 50", func(b *testing.B) {
 		for n := 0; n < b.N; n++ {
-			_ = NewSlice(s).Parallel(8).Filter(filter)
+			_ = NewSlice(s).Parallel(50).Filter(filter)
 		}
 	})
 
-	b.Run("goroutine 10", func(b *testing.B) {
+	b.Run("goroutine 100", func(b *testing.B) {
 		for n := 0; n < b.N; n++ {
-			_ = NewSlice(s).Parallel(10).Filter(filter)
+			_ = NewSlice(s).Parallel(100).Filter(filter)
 		}
 	})
 }

@@ -2,8 +2,8 @@ package stream
 
 import "context"
 
-type taskResult[V any] struct {
-	v         V
+type taskResult[TaskResult any] struct {
+	v         TaskResult
 	predicate bool
 }
 
@@ -73,20 +73,20 @@ func (p parallel[Elem, TaskResult, Result]) task(ctx context.Context, slice []El
 	}
 }
 
-func (p parallel[Elem, TaskResult, Result]) partition(slice []Elem, cores int) ([][]Elem, int) {
+func (p parallel[Elem, TaskResult, Result]) partition(slice []Elem, goroutines int) ([][]Elem, int) {
 	var ret [][]Elem
 	l := len(slice)
 
-	if cores > l {
-		cores = l
+	if goroutines > l {
+		goroutines = l
 	}
 
-	size := int(float64(l) / float64(cores))
-	rem := l % cores
-	for i := 0; i < cores; i++ {
+	size := int(float64(l) / float64(goroutines))
+	rem := l % goroutines
+	for i := 0; i < goroutines; i++ {
 		s := i * size
 		e := (i + 1) * size
-		if i == cores-1 {
+		if i == goroutines-1 {
 			e = e + rem
 		}
 		ret = append(ret, slice[s:e])
