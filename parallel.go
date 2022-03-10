@@ -2,15 +2,21 @@ package stream
 
 import "context"
 
-type parallelHandler[Elem any, TaskResult any] func(Elem) TaskResult
-type parallelResultHandler[TaskResult any, Result any] func(results chan []TaskResult) Result
+type taskResult[V any] struct {
+	v         V
+	predicate bool
+}
+
+type parallelHandler[Elem any, TaskResult any] func(int, Elem) taskResult[TaskResult]
+
+type parallelResultHandler[TaskResult any, Result any] func(results chan []taskResult[TaskResult]) Result
 
 type parallel[Elem any, TaskResult any, Result any] struct {
 	goroutines    int
 	slice         []Elem
-	handler       func(Elem) TaskResult
-	resultHandler func(taskResultCh chan []TaskResult) Result
-	taskResultCh  chan []TaskResult
+	handler       parallelHandler[Elem, TaskResult]
+	resultHandler parallelResultHandler[TaskResult, Result]
+	taskResultCh  chan []taskResult[TaskResult]
 	isWaitAllDone bool
 }
 
@@ -26,7 +32,7 @@ func parallelProcess[Elem any, TaskResult any, Result any](
 		slice:         slice,
 		handler:       handler,
 		resultHandler: resultHandler,
-		taskResultCh:  make(chan []TaskResult, goroutines),
+		taskResultCh:  make(chan []taskResult[TaskResult], goroutines),
 		isWaitAllDone: isWaitAllDone,
 	}
 	return p.process()
@@ -37,36 +43,37 @@ func (p parallel[Elem, TaskResult, Result]) process() Result {
 	defer cancel()
 
 	if len(p.slice) > 0 {
-		partition := p.partition(p.slice, p.goroutines)
-		for _, s := range partition {
-			go p.task(ctx, s)
+		partition, size := p.partition(p.slice, p.goroutines)
+		for i, s := range partition {
+			go p.task(ctx, s, i*size)
 		}
 	}
+
 	result := p.resultHandler(p.taskResultCh)
 	return result
 }
 
-func (p parallel[Elem, TaskResult, Result]) task(ctx context.Context, slice []Elem) {
+func (p parallel[Elem, TaskResult, Result]) task(ctx context.Context, slice []Elem, offset int) {
 	if p.isWaitAllDone {
-		ret := make([]TaskResult, 0, len(slice))
-		for _, elem := range slice {
-			ret = append(ret, p.handler(elem))
+		ret := make([]taskResult[TaskResult], 0, len(slice))
+		for i, elem := range slice {
+			ret = append(ret, p.handler(i+offset, elem))
 		}
 		p.taskResultCh <- ret
 		return
 	}
 
-	for _, elem := range slice {
+	for i, elem := range slice {
 		select {
 		case <-ctx.Done():
 			return
 		default:
-			p.taskResultCh <- []TaskResult{p.handler(elem)}
+			p.taskResultCh <- []taskResult[TaskResult]{p.handler(i, elem)}
 		}
 	}
 }
 
-func (p parallel[Elem, TaskResult, Result]) partition(slice []Elem, cores int) [][]Elem {
+func (p parallel[Elem, TaskResult, Result]) partition(slice []Elem, cores int) ([][]Elem, int) {
 	var ret [][]Elem
 	l := len(slice)
 
@@ -84,5 +91,36 @@ func (p parallel[Elem, TaskResult, Result]) partition(slice []Elem, cores int) [
 		}
 		ret = append(ret, slice[s:e])
 	}
-	return ret
+	return ret, size
+}
+
+func parallelResultHandlerMatch(c bool, count int) parallelResultHandler[bool, bool] {
+	return func(taskResultCh chan []taskResult[bool]) bool {
+		for i := 0; i < count; {
+			result := <-taskResultCh
+			for _, r := range result {
+				if r.predicate == c {
+					return c
+				}
+			}
+			i = i + len(result)
+		}
+		return !c
+	}
+}
+
+func parallelResultHandlerEach[Elem any](count int) parallelResultHandler[Elem, []Elem] {
+	return func(results chan []taskResult[Elem]) []Elem {
+		newSlice := make([]Elem, 0, count)
+		for i := 0; i < count; {
+			result := <-results
+			for _, r := range result {
+				if r.predicate {
+					newSlice = append(newSlice, r.v)
+				}
+			}
+			i = i + len(result)
+		}
+		return newSlice
+	}
 }

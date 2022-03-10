@@ -1,6 +1,7 @@
 package stream
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -269,8 +270,8 @@ func TestSliceForEach(t *testing.T) {
 	}{
 		{
 			name:  "normal",
-			input: []int{1, 2, 1},
-			want:  []int{1, 2, 1},
+			input: []int{1, 2, 3, 4, 5, 6},
+			want:  []int{1, 2, 3, 4, 5, 6},
 		},
 	}
 	for _, tt := range tests {
@@ -282,6 +283,9 @@ func TestSliceForEach(t *testing.T) {
 			assert.Equal(t, tt.want, got)
 
 			got = NewSliceByOrdered(tt.input).ForEach(func(i int, v int) { assert.Equal(t, tt.want[i], v) }).ToSlice()
+			assert.Equal(t, tt.want, got)
+
+			got = NewSlice(tt.input).Parallel(10).ForEach(func(i int, v int) { fmt.Println(i, v) }).ToSlice()
 			assert.Equal(t, tt.want, got)
 		})
 	}
@@ -342,9 +346,9 @@ func TestSliceFilter(t *testing.T) {
 	}{
 		{
 			name:      "match",
-			input:     []string{"a", "b"},
-			predicate: func(v string) bool { return v == "a" },
-			want:      []string{"a"},
+			input:     []string{"a", "b", "c"},
+			predicate: func(v string) bool { return v != "b" },
+			want:      []string{"a", "c"},
 		},
 		{
 			name:      "no match",
@@ -364,19 +368,10 @@ func TestSliceFilter(t *testing.T) {
 			got := NewSlice(tt.input).Filter(tt.predicate).ToSlice()
 			assert.Equal(t, tt.want, got)
 
-			got = NewSlice(tt.input).Parallel(10).Filter(tt.predicate).ToSlice()
-			assert.Equal(t, tt.want, got)
-
 			got = NewSliceByComparable(tt.input).Filter(tt.predicate).ToSlice()
 			assert.Equal(t, tt.want, got)
 
-			got = NewSliceByComparable(tt.input).Parallel(10).Filter(tt.predicate).ToSlice()
-			assert.Equal(t, tt.want, got)
-
 			got = NewSliceByOrdered(tt.input).Filter(tt.predicate).ToSlice()
-			assert.Equal(t, tt.want, got)
-
-			got = NewSliceByOrdered(tt.input).Parallel(10).Filter(tt.predicate).ToSlice()
 			assert.Equal(t, tt.want, got)
 		})
 	}
