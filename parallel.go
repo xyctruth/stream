@@ -2,24 +2,32 @@ package stream
 
 import "context"
 
+type parallelHandler[Elem any, TaskResult any] func(Elem) TaskResult
+type parallelResultHandler[TaskResult any, Result any] func(results chan []TaskResult) Result
+
 type parallel[Elem any, TaskResult any, Result any] struct {
 	goroutines    int
 	slice         []Elem
 	handler       func(Elem) TaskResult
-	resultHandler func(results chan []TaskResult) Result
-	tasks         chan Elem
-	results       chan []TaskResult
+	resultHandler func(taskResultCh chan []TaskResult) Result
+	taskResultCh  chan []TaskResult
 	isWaitAllDone bool
 }
 
-func parallelProcess[Elem any, TaskResult any, Result any](goroutines int, slice []Elem, handler func(Elem) TaskResult, resultHandler func(results chan []TaskResult) Result) Result {
+func parallelProcess[Elem any, TaskResult any, Result any](
+	goroutines int,
+	slice []Elem,
+	handler parallelHandler[Elem, TaskResult],
+	resultHandler parallelResultHandler[TaskResult, Result],
+	isWaitAllDone bool) Result {
+
 	p := parallel[Elem, TaskResult, Result]{
 		goroutines:    goroutines,
 		slice:         slice,
 		handler:       handler,
 		resultHandler: resultHandler,
-		tasks:         make(chan Elem, goroutines),
-		results:       make(chan []TaskResult, goroutines),
+		taskResultCh:  make(chan []TaskResult, goroutines),
+		isWaitAllDone: isWaitAllDone,
 	}
 	return p.process()
 }
@@ -30,12 +38,11 @@ func (p parallel[Elem, TaskResult, Result]) process() Result {
 
 	if len(p.slice) > 0 {
 		partition := p.partition(p.slice, p.goroutines)
-
 		for _, s := range partition {
 			go p.consume(ctx, s)
 		}
 	}
-	result := p.resultHandler(p.results)
+	result := p.resultHandler(p.taskResultCh)
 	return result
 }
 
@@ -45,7 +52,7 @@ func (p parallel[Elem, TaskResult, Result]) consume(ctx context.Context, slice [
 		for _, elem := range slice {
 			ret = append(ret, p.handler(elem))
 		}
-		p.results <- ret
+		p.taskResultCh <- ret
 		return
 	}
 
@@ -54,7 +61,7 @@ func (p parallel[Elem, TaskResult, Result]) consume(ctx context.Context, slice [
 		case <-ctx.Done():
 			return
 		default:
-			p.results <- []TaskResult{p.handler(elem)}
+			p.taskResultCh <- []TaskResult{p.handler(elem)}
 		}
 	}
 }

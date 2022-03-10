@@ -48,7 +48,7 @@ func (stream sliceStream[Elem]) At(index int) Elem {
 // If the slice is empty or nil then true is returned.
 func (stream sliceStream[Elem]) AllMatch(predicate func(Elem) bool) bool {
 	if stream.parallel {
-		return parallelProcess(stream.goroutines, stream.slice, predicate, func(results chan []bool) bool {
+		resultHandler := func(results chan []bool) bool {
 			for i := 0; i < len(stream.slice); {
 				result := <-results
 				for _, r := range result {
@@ -59,7 +59,8 @@ func (stream sliceStream[Elem]) AllMatch(predicate func(Elem) bool) bool {
 				i = i + len(result)
 			}
 			return true
-		})
+		}
+		return parallelProcess(stream.goroutines, stream.slice, predicate, resultHandler, false)
 	}
 
 	for _, v := range stream.slice {
@@ -75,9 +76,9 @@ func (stream sliceStream[Elem]) AllMatch(predicate func(Elem) bool) bool {
 // If the slice is empty or nil then false is returned.
 func (stream sliceStream[Elem]) AnyMatch(predicate func(Elem) bool) bool {
 	if stream.parallel {
-		return parallelProcess[Elem, bool, bool](stream.goroutines, stream.slice, predicate, func(results chan []bool) bool {
+		resultHandler := func(taskResultCh chan []bool) bool {
 			for i := 0; i < len(stream.slice); {
-				result := <-results
+				result := <-taskResultCh
 				for _, r := range result {
 					if r {
 						return true
@@ -86,7 +87,8 @@ func (stream sliceStream[Elem]) AnyMatch(predicate func(Elem) bool) bool {
 				i = i + len(result)
 			}
 			return false
-		})
+		}
+		return parallelProcess[Elem, bool, bool](stream.goroutines, stream.slice, predicate, resultHandler, false)
 	}
 
 	for _, v := range stream.slice {
@@ -164,7 +166,7 @@ func (stream sliceStream[Elem]) Filter(predicate func(Elem) bool) sliceStream[El
 			return newSlice
 		}
 
-		newSlice := parallelProcess[Elem, *Elem, []Elem](stream.goroutines, stream.slice, handler, resultHandler)
+		newSlice := parallelProcess[Elem, *Elem, []Elem](stream.goroutines, stream.slice, handler, resultHandler, true)
 		stream.slice = newSlice
 		return stream
 	}
