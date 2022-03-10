@@ -31,6 +31,23 @@ func TestNewSliceStream(t *testing.T) {
 	}
 }
 
+func TestSliceParallel(t *testing.T) {
+	s := NewSlice(newArray(1)).Parallel(1)
+	assert.Equal(t, false, s.parallel)
+	assert.Equal(t, 1, s.goroutines)
+
+	s = s.Parallel(10)
+	assert.Equal(t, true, s.parallel)
+	assert.Equal(t, 10, s.goroutines)
+}
+
+func TestSliceParallelFilter(t *testing.T) {
+	s1 := NewSlice(newArray(4)).Parallel(3).Filter(func(i int) bool { return i > 0 }).ToSlice()
+	for _, v := range s1 {
+		assert.Equal(t, true, v > 0)
+	}
+}
+
 func TestSliceAt(t *testing.T) {
 	tests := []struct {
 		name  string

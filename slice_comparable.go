@@ -11,7 +11,7 @@ func NewSliceByComparable[Elem comparable](v []Elem) sliceComparableStream[Elem]
 	return sliceComparableStream[Elem]{sliceStream: NewSlice(v)}
 }
 
-// Parallel cores > 1 enable parallel, cores <= 1 disable parallel
+// Parallel goroutines > 1 enable process, goroutines <= 1 disable process
 func (stream sliceComparableStream[Elem]) Parallel(cores int) sliceComparableStream[Elem] {
 	stream.sliceStream = stream.sliceStream.Parallel(cores)
 	return stream

@@ -14,7 +14,7 @@ func NewSliceByOrdered[Elem constraints.Ordered](v []Elem) sliceOrderedStream[El
 	return sliceOrderedStream[Elem]{sliceComparableStream: NewSliceByComparable(v)}
 }
 
-// Parallel cores > 1 enable parallel, cores <= 1 disable parallel
+// Parallel goroutines > 1 enable process, goroutines <= 1 disable process
 func (stream sliceOrderedStream[Elem]) Parallel(cores int) sliceOrderedStream[Elem] {
 	stream.sliceComparableStream = stream.sliceComparableStream.Parallel(cores)
 	return stream

@@ -5,9 +5,9 @@ import (
 )
 
 type sliceStream[Elem any] struct {
-	slice    []Elem
-	parallel bool
-	cores    int
+	slice      []Elem
+	parallel   bool
+	goroutines int
 }
 
 // NewSlice new stream instance, generics constraints based on any.
@@ -20,10 +20,10 @@ func NewSlice[Elem any](v []Elem) sliceStream[Elem] {
 	return sliceStream[Elem]{slice: clone}
 }
 
-// Parallel cores > 1 enable parallel, cores <= 1 disable parallel
-func (stream sliceStream[Elem]) Parallel(cores int) sliceStream[Elem] {
-	stream.cores = cores
-	if stream.cores > 1 {
+// Parallel goroutines > 1 enable process, goroutines <= 1 disable process
+func (stream sliceStream[Elem]) Parallel(goroutines int) sliceStream[Elem] {
+	stream.goroutines = goroutines
+	if stream.goroutines > 1 {
 		stream.parallel = true
 	} else {
 		stream.parallel = false
@@ -48,12 +48,15 @@ func (stream sliceStream[Elem]) At(index int) Elem {
 // If the slice is empty or nil then true is returned.
 func (stream sliceStream[Elem]) AllMatch(predicate func(Elem) bool) bool {
 	if stream.parallel {
-		return parallel[Elem, bool, bool](stream.cores, stream.slice, predicate, func(results chan bool) bool {
-			for i := 0; i < len(stream.slice); i++ {
-				r := <-results
-				if !r {
-					return false
+		return parallelProcess(stream.goroutines, stream.slice, predicate, func(results chan []bool) bool {
+			for i := 0; i < len(stream.slice); {
+				result := <-results
+				for _, r := range result {
+					if !r {
+						return false
+					}
 				}
+				i = i + len(result)
 			}
 			return true
 		})
@@ -72,12 +75,15 @@ func (stream sliceStream[Elem]) AllMatch(predicate func(Elem) bool) bool {
 // If the slice is empty or nil then false is returned.
 func (stream sliceStream[Elem]) AnyMatch(predicate func(Elem) bool) bool {
 	if stream.parallel {
-		return parallel[Elem, bool, bool](stream.cores, stream.slice, predicate, func(results chan bool) bool {
-			for i := 0; i < len(stream.slice); i++ {
-				r := <-results
-				if r {
-					return true
+		return parallelProcess[Elem, bool, bool](stream.goroutines, stream.slice, predicate, func(results chan []bool) bool {
+			for i := 0; i < len(stream.slice); {
+				result := <-results
+				for _, r := range result {
+					if r {
+						return true
+					}
 				}
+				i = i + len(result)
 			}
 			return false
 		})
@@ -144,18 +150,21 @@ func (stream sliceStream[Elem]) Filter(predicate func(Elem) bool) sliceStream[El
 			}
 			return nil
 		}
-		resultHandler := func(results chan *Elem) []Elem {
+		resultHandler := func(results chan []*Elem) []Elem {
 			newSlice := make([]Elem, 0)
-			for i := 0; i < len(stream.slice); i++ {
-				r := <-results
-				if r != nil {
-					newSlice = append(newSlice, *r)
+			for i := 0; i < len(stream.slice); {
+				result := <-results
+				for _, r := range result {
+					if r != nil {
+						newSlice = append(newSlice, *r)
+					}
 				}
+				i = i + len(result)
 			}
 			return newSlice
 		}
 
-		newSlice := parallel[Elem, *Elem, []Elem](stream.cores, stream.slice, handler, resultHandler)
+		newSlice := parallelProcess[Elem, *Elem, []Elem](stream.goroutines, stream.slice, handler, resultHandler)
 		stream.slice = newSlice
 		return stream
 	}

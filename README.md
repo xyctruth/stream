@@ -36,7 +36,7 @@ stream.NewSliceByComparable([]int{1, 2, 3, 7, 1})
 ### Parallel
 
 ```go
-s4 := stream.NewSliceByOrdered([]string{"d", "a", "b", "c", "a"}).
+s := stream.NewSliceByOrdered([]string{"d", "a", "b", "c", "a"}).
     Parallel(10).
     Filter(func(s string) bool { return s != "b" }).
     Map(func(s string) string { return "class_" + s }).
