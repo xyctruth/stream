@@ -61,16 +61,16 @@ func TestPartition(t *testing.T) {
 					startIndex: 2,
 				},
 				{
-					slice:      []int{5, 6}, // expect 5,6,7
-					startIndex: 4,           // expect 4
+					slice:      []int{5, 6, 7},  
+					startIndex: 4,            
 				},
 				{
-					slice:      []int{7, 8}, // expect 8,9,10
-					startIndex: 6,           // expect 7
+					slice:      []int{8, 9, 10}, 
+					startIndex: 7,           
 				},
 				{
-					slice:      []int{9, 10, 11, 12, 13}, // expect 11,12,13
-					startIndex: 8,                        //expect 10
+					slice:      []int{11, 12, 13},
+					startIndex: 10,                        
 				},
 			},
 		},
@@ -108,16 +108,16 @@ func TestPartition(t *testing.T) {
 					startIndex: 6,
 				},
 				{
-					slice:      []int{8}, //expect 8,9
-					startIndex: 7,        //expect 7
+					slice:      []int{8, 9}, 
+					startIndex: 7,        
 				},
 				{
-					slice:      []int{9}, //expect 10,11
-					startIndex: 8,        //expect 9
+					slice:      []int{10, 11},  
+					startIndex: 9,       
 				},
 				{
-					slice:      []int{10, 11, 12, 13}, //expect 12,13
-					startIndex: 9,                     //expect 11
+					slice:      []int{12, 13},  
+					startIndex: 11,                     
 				},
 			},
 		},
