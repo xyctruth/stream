@@ -39,15 +39,16 @@ func partitionHandler[Elem any](slice []Elem, goroutines int) []partition[Elem] 
 	}
 	partitions := make([]partition[Elem], 0, goroutines)
 
-	size := int(float64(l) / float64(goroutines))
+	size := l / goroutines
 	rem := l % goroutines
+	var rg = [2]int{0, size}
 	for i := 0; i < goroutines; i++ {
-		s := i * size
-		e := (i + 1) * size
-		if i == goroutines-1 {
-			e = e + rem
+		partitions = append(partitions, partition[Elem]{slice: slice[rg[0]:rg[1]], startIndex: rg[0]})
+		rg[0] = rg[1];
+		rg[1] = rg[0] + size;
+		if i + rem + 1 >= goroutines{
+			rg[1] = rg[1] + 1;
 		}
-		partitions = append(partitions, partition[Elem]{slice: slice[s:e], startIndex: size * i})
 	}
 	return partitions
 }
