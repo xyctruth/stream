@@ -5,13 +5,13 @@
 
 > [English](./README.md) / [中文](./README-ZH.md)
 
-## Introduction
+## 简介
 
-Stream is a stream library based on golang 1.18+ generics, support parallel. (manipulate slice like java stream)
+Stream 是一个基于 golang 1.18+ 泛型的流库，支持并行。(像Java流一样操作切片)
 
-## Getting Started
+## 入门
 
-### Basic
+### 基础
 
 ```go
 s := stream.NewSliceByOrdered([]string{"d", "a", "b", "c", "a"}).
@@ -22,29 +22,29 @@ s := stream.NewSliceByOrdered([]string{"d", "a", "b", "c", "a"}).
     ToSlice()
 ```
 
-### Constraints
+### 约束
 
-`any` accepts elements of any type, so you cannot use `==` `!=` `>` `<` to compare elements, which will prevent you from using Sort(), Find()... functions, but you can use SortFunc(fn), FindFunc(fn)... instead
+`any` 接受任何类型的元素, 所以不能使用 `==` `!=` `>` `<` 比较元素, 导致你不能使用 Sort(), Find()...等函数 ,但是你可以使用 SortFunc(fn), FindFunc(fn)... 代替
 
 ```go
 stream.NewSlice([]int{1, 2, 3, 7, 1})
 ```
 
-`comparable` accepts type can use `==` `!=` to compare elements, but still can't use `>` `<` to compare elements, so you can't use Sort(), Min()... functions, but you can use SortFunc(fn), MinFunc()... instead
+`comparable` 接收的类型可以使用 `==` `!=` 比较元素, 但仍然不能使用 `>` `<` 比较元素, 因此你不能使用 Sort(), Min()...等函数 ,但是你可以使用 SortFunc(fn), MinFunc()... 代替
 
 ```go
 stream.NewSliceByComparable([]int{1, 2, 3, 7, 1})
 ```
 
-`constraints.Ordered` accepts types that can use `==` `!=` `>` `<`  to compare elements, so can use all functions
+`constraints.Ordered` 接收的类型可以使用 `==` `!=` `>` `<`, 所以可以使用所有的函数
 
 ```go
 stream.NewSliceByOrdered([]int{1, 2, 3, 7, 1})
 ```
 
-### Parallel
+### 并行
 
-The `Parallel` function accept a `goroutines int` parameter. If goroutines>1, create the same number of goroutines to execute, otherwise close Parallel, the stream parallel is off by default.
+`Parallel` 函数接收一个 `goroutines int` 参数. 如果 goroutines>1 则创建相同数量的goroutines执行, 否则关闭并行, 默认流是关闭并行的。
 
 ```go
 s := stream.NewSliceByOrdered([]string{"d", "a", "b", "c", "a"}).
