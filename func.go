@@ -1,10 +1,12 @@
 package stream
 
 func singleResultHandler[Elem any](defaultVal Elem) parallelResultHandler[Elem, Elem] {
-	return func(taskResultCh chan []Elem) Elem {
-		for result := range taskResultCh {
-			for _, r := range result {
-				return r
+	return func(taskResultChs []chan []Elem) Elem {
+		for _, ch := range taskResultChs {
+			for result := range ch {
+				for _, r := range result {
+					return r
+				}
 			}
 		}
 		return defaultVal
@@ -12,11 +14,13 @@ func singleResultHandler[Elem any](defaultVal Elem) parallelResultHandler[Elem, 
 }
 
 func multipleResultHandler[Elem any](count int) parallelResultHandler[Elem, []Elem] {
-	return func(taskResultCh chan []Elem) []Elem {
+	return func(taskResultChs []chan []Elem) []Elem {
 		results := make([]Elem, 0, count)
-		for result := range taskResultCh {
-			for _, r := range result {
-				results = append(results, r)
+		for _, ch := range taskResultChs {
+			for result := range ch {
+				for _, r := range result {
+					results = append(results, r)
+				}
 			}
 		}
 		return results

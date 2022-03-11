@@ -133,8 +133,8 @@ func TestParallelFilter(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			assert.Equal(t,
-				NewSliceByOrdered(tt.input).Parallel(10).Filter(tt.predicate).Sort().ToSlice(),
-				NewSliceByOrdered(tt.input).Filter(tt.predicate).Sort().ToSlice())
+				NewSliceByOrdered(tt.input).Parallel(10).Filter(tt.predicate).ToSlice(),
+				NewSliceByOrdered(tt.input).Filter(tt.predicate).ToSlice())
 		})
 	}
 }
@@ -165,8 +165,8 @@ func TestParallelMap(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			assert.Equal(t,
-				NewSliceByOrdered(tt.input).Parallel(10).Map(tt.mapper).Sort().ToSlice(),
-				NewSliceByOrdered(tt.input).Map(tt.mapper).Sort().ToSlice())
+				NewSliceByOrdered(tt.input).Parallel(10).Map(tt.mapper).ToSlice(),
+				NewSliceByOrdered(tt.input).Map(tt.mapper).ToSlice())
 		})
 	}
 }

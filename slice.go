@@ -159,7 +159,6 @@ func (stream sliceStream[Elem]) FindFunc(predicate func(Elem) bool) int {
 // Filter Returns a stream consisting of the elements of this stream that match the given predicate.
 //
 // Support Parallel.
-// Parallel the side effect is to lose the original order of the stream elements.
 func (stream sliceStream[Elem]) Filter(predicate func(Elem) bool) sliceStream[Elem] {
 	if stream.slice == nil {
 		return stream
@@ -207,7 +206,6 @@ func (stream sliceStream[Elem]) Limit(maxSize int) sliceStream[Elem] {
 // Map Returns a stream consisting of the results of applying the given function to the elements of this stream.
 //
 // Support Parallel.
-// Parallel the side effect is to lose the original order of the stream elements.
 func (stream sliceStream[Elem]) Map(mapper func(Elem) Elem) sliceStream[Elem] {
 	if stream.slice == nil {
 		return stream

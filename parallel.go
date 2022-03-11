@@ -2,21 +2,20 @@ package stream
 
 import (
 	"context"
-	"sync"
 )
 
 type parallel[Elem any, TaskResult any, Result any] struct {
 	goroutines    int
 	slice         []Elem
-	handler       func(int, Elem) (isReturn bool, taskResult TaskResult)
+	handler       parallelHandler[Elem, TaskResult]
 	resultHandler parallelResultHandler[TaskResult, Result]
-	taskResultCh  chan []TaskResult
+	taskResultChs []chan []TaskResult
 	isWaitAllDone bool
 }
 
-type parallelHandler[Elem any, TaskResult any] func(int, Elem) (isReturn bool, taskResult TaskResult)
+type parallelHandler[Elem any, TaskResult any] func(index int, elem Elem) (isReturn bool, taskResult TaskResult)
 
-type parallelResultHandler[TaskResult any, Result any] func(taskResultCh chan []TaskResult) Result
+type parallelResultHandler[TaskResult any, Result any] func(taskResultChs []chan []TaskResult) Result
 
 func parallelProcess[Elem any, TaskResult any, Result any](
 	goroutines int,
@@ -30,7 +29,6 @@ func parallelProcess[Elem any, TaskResult any, Result any](
 		slice:         slice,
 		handler:       handler,
 		resultHandler: resultHandler,
-		taskResultCh:  make(chan []TaskResult, goroutines),
 		isWaitAllDone: isWaitAllDone,
 	}
 	return p.process()
@@ -40,27 +38,21 @@ func (p parallel[Elem, TaskResult, Result]) process() Result {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	wg := sync.WaitGroup{}
-
 	if len(p.slice) > 0 {
 		partitions, size := partition(p.slice, p.goroutines)
-		wg.Add(len(partitions))
+		p.taskResultChs = make([]chan []TaskResult, len(partitions))
 		for i, s := range partitions {
-			go p.task(ctx, &wg, cancel, s, i*size)
+			p.taskResultChs[i] = make(chan []TaskResult, len(s))
+			go p.task(ctx, cancel, p.taskResultChs[i], s, i*size)
 		}
 	}
 
-	go func() {
-		wg.Wait()
-		close(p.taskResultCh)
-	}()
-
-	result := p.resultHandler(p.taskResultCh)
+	result := p.resultHandler(p.taskResultChs)
 	return result
 }
 
-func (p parallel[Elem, TaskResult, Result]) task(ctx context.Context, wg *sync.WaitGroup, cancel context.CancelFunc, slice []Elem, offset int) {
-	defer wg.Done()
+func (p parallel[Elem, TaskResult, Result]) task(ctx context.Context, cancel context.CancelFunc, ch chan []TaskResult, slice []Elem, offset int) {
+	defer close(ch)
 
 	if p.isWaitAllDone {
 		ret := make([]TaskResult, 0, len(slice))
@@ -71,7 +63,7 @@ func (p parallel[Elem, TaskResult, Result]) task(ctx context.Context, wg *sync.W
 			}
 		}
 		if len(ret) > 0 {
-			p.taskResultCh <- ret
+			ch <- ret
 		}
 		return
 	}
@@ -83,7 +75,7 @@ func (p parallel[Elem, TaskResult, Result]) task(ctx context.Context, wg *sync.W
 		default:
 			isReturn, r := p.handler(i+offset, elem)
 			if isReturn {
-				p.taskResultCh <- []TaskResult{r}
+				ch <- []TaskResult{r}
 				cancel()
 				return
 			}
