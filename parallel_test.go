@@ -21,7 +21,7 @@ func BenchmarkParallel(b *testing.B) {
 
 	filter := func(v int) bool {
 		time.Sleep(time.Millisecond)
-		return v > 0
+		return v > 100
 	}
 
 	b.Run("no parallel", func(b *testing.B) {
@@ -58,6 +58,51 @@ func BenchmarkParallel(b *testing.B) {
 	b.Run("goroutine 100", func(b *testing.B) {
 		for n := 0; n < b.N; n++ {
 			_ = NewSlice(s).Parallel(100).Filter(filter)
+		}
+	})
+}
+
+func BenchmarkParallelEcho(b *testing.B) {
+	s := newArray(100)
+
+	action := func(i int, v int) {
+		time.Sleep(time.Millisecond)
+	}
+
+	b.Run("no parallel", func(b *testing.B) {
+		for n := 0; n < b.N; n++ {
+			_ = NewSlice(s).Parallel(1).ForEach(action)
+		}
+	})
+
+	b.Run("goroutine 2", func(b *testing.B) {
+		for n := 0; n < b.N; n++ {
+			_ = NewSlice(s).Parallel(2).ForEach(action)
+		}
+
+	})
+
+	b.Run("goroutine 4", func(b *testing.B) {
+		for n := 0; n < b.N; n++ {
+			_ = NewSlice(s).Parallel(4).ForEach(action)
+		}
+	})
+
+	b.Run("goroutine 6", func(b *testing.B) {
+		for n := 0; n < b.N; n++ {
+			_ = NewSlice(s).Parallel(6).ForEach(action)
+		}
+	})
+
+	b.Run("goroutine 50", func(b *testing.B) {
+		for n := 0; n < b.N; n++ {
+			_ = NewSlice(s).Parallel(50).ForEach(action)
+		}
+	})
+
+	b.Run("goroutine 100", func(b *testing.B) {
+		for n := 0; n < b.N; n++ {
+			_ = NewSlice(s).Parallel(100).ForEach(action)
 		}
 	})
 }
@@ -124,4 +169,10 @@ func TestParallelMap(t *testing.T) {
 				NewSliceByOrdered(tt.input).Map(tt.mapper).Sort().ToSlice())
 		})
 	}
+}
+
+func TestEcho(t *testing.T) {
+	s := newArray(100)
+	NewSliceByOrdered(s).Parallel(10).Filter(func(i int) bool { return i > 100 })
+	NewSliceByOrdered(s).Parallel(10).ForEach(func(i int, v int) {})
 }
