@@ -27,13 +27,17 @@ func multipleResultHandler[Elem any](count int) parallelResultHandler[Elem, []El
 	}
 }
 
-func partition[Elem any](slice []Elem, goroutines int) ([][]Elem, int) {
-	var ret [][]Elem
-	l := len(slice)
+type partition[Elem any] struct {
+	slice      []Elem
+	startIndex int
+}
 
+func partitionHandler[Elem any](slice []Elem, goroutines int) []partition[Elem] {
+	l := len(slice)
 	if goroutines > l {
 		goroutines = l
 	}
+	partitions := make([]partition[Elem], 0, goroutines)
 
 	size := int(float64(l) / float64(goroutines))
 	rem := l % goroutines
@@ -43,7 +47,7 @@ func partition[Elem any](slice []Elem, goroutines int) ([][]Elem, int) {
 		if i == goroutines-1 {
 			e = e + rem
 		}
-		ret = append(ret, slice[s:e])
+		partitions = append(partitions, partition[Elem]{slice: slice[s:e], startIndex: size * i})
 	}
-	return ret, size
+	return partitions
 }

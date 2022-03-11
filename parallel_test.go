@@ -20,7 +20,7 @@ func BenchmarkParallel(b *testing.B) {
 	s := newArray(100)
 
 	filter := func(v int) bool {
-		//time.Sleep(time.Millisecond)
+		time.Sleep(time.Millisecond)
 		return v > 100
 	}
 
@@ -66,7 +66,7 @@ func BenchmarkParallelEcho(b *testing.B) {
 	s := newArray(100)
 
 	action := func(i int, v int) {
-		//time.Sleep(time.Millisecond)
+		time.Sleep(time.Millisecond)
 	}
 
 	b.Run("no parallel", func(b *testing.B) {

@@ -6,7 +6,6 @@ import (
 )
 
 func main() {
-
 	// Constraints `any`
 	s1 := stream.NewSlice([]string{"d", "a", "b", "c", "a"}).
 		Filter(func(s string) bool { return s != "b" }).

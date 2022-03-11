@@ -42,13 +42,6 @@ func TestSliceParallel(t *testing.T) {
 	assert.Equal(t, 10, s.goroutines)
 }
 
-func TestSliceParallelFilter(t *testing.T) {
-	s1 := NewSlice(newArray(4)).Parallel(3).Filter(func(i int) bool { return i > 0 }).ToSlice()
-	for _, v := range s1 {
-		assert.Equal(t, true, v > 0)
-	}
-}
-
 func TestSliceAt(t *testing.T) {
 	tests := []struct {
 		name  string
@@ -137,7 +130,7 @@ func TestSliceAllMatch(t *testing.T) {
 			got := NewSlice(tt.input).AllMatch(tt.predicate)
 			assert.Equal(t, tt.want, got)
 
-			got = NewSlice(tt.input).Parallel(10).AllMatch(tt.predicate)
+			got = NewSlice(tt.input).Parallel(2).AllMatch(tt.predicate)
 			assert.Equal(t, tt.want, got)
 		})
 	}
@@ -180,7 +173,7 @@ func TestSliceAnyMatch(t *testing.T) {
 			got := NewSlice(tt.input).AnyMatch(tt.predicate)
 			assert.Equal(t, tt.want, got)
 
-			got = NewSlice(tt.input).Parallel(10).AnyMatch(tt.predicate)
+			got = NewSlice(tt.input).Parallel(2).AnyMatch(tt.predicate)
 			assert.Equal(t, tt.want, got)
 		})
 	}
@@ -368,10 +361,19 @@ func TestSliceFilter(t *testing.T) {
 			got := NewSlice(tt.input).Filter(tt.predicate).ToSlice()
 			assert.Equal(t, tt.want, got)
 
+			got = NewSlice(tt.input).Parallel(2).Filter(tt.predicate).ToSlice()
+			assert.Equal(t, tt.want, got)
+
 			got = NewSliceByComparable(tt.input).Filter(tt.predicate).ToSlice()
 			assert.Equal(t, tt.want, got)
 
+			got = NewSliceByComparable(tt.input).Parallel(2).Filter(tt.predicate).ToSlice()
+			assert.Equal(t, tt.want, got)
+
 			got = NewSliceByOrdered(tt.input).Filter(tt.predicate).ToSlice()
+			assert.Equal(t, tt.want, got)
+
+			got = NewSliceByOrdered(tt.input).Parallel(2).Filter(tt.predicate).ToSlice()
 			assert.Equal(t, tt.want, got)
 		})
 	}
@@ -496,10 +498,19 @@ func TestSliceMap(t *testing.T) {
 			got := NewSlice(tt.input).Map(tt.mapper).ToSlice()
 			assert.Equal(t, tt.want, got)
 
+			got = NewSlice(tt.input).Parallel(2).Map(tt.mapper).ToSlice()
+			assert.Equal(t, tt.want, got)
+
 			got = NewSliceByComparable(tt.input).Map(tt.mapper).ToSlice()
 			assert.Equal(t, tt.want, got)
 
+			got = NewSliceByComparable(tt.input).Parallel(2).Map(tt.mapper).ToSlice()
+			assert.Equal(t, tt.want, got)
+
 			got = NewSliceByOrdered(tt.input).Map(tt.mapper).ToSlice()
+			assert.Equal(t, tt.want, got)
+
+			got = NewSliceByOrdered(tt.input).Parallel(2).Map(tt.mapper).ToSlice()
 			assert.Equal(t, tt.want, got)
 		})
 	}
