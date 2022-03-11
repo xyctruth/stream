@@ -179,6 +179,58 @@ func TestSliceAnyMatch(t *testing.T) {
 	}
 }
 
+func TestSliceAppend(t *testing.T) {
+	tests := []struct {
+		name   string
+		input  []int
+		input2 []int
+		want   []int
+	}{
+		{
+			name:   "case",
+			input:  []int{1, 2},
+			input2: []int{3, 4},
+			want:   []int{1, 2, 3, 4},
+		},
+		{
+			name:   "empty",
+			input:  []int{1, 2},
+			input2: []int{},
+			want:   []int{1, 2},
+		},
+		{
+			name:   "nil",
+			input:  []int{1, 2},
+			input2: nil,
+			want:   []int{1, 2},
+		},
+		{
+			name:   "empty",
+			input:  []int{},
+			input2: []int{3, 4},
+			want:   []int{3, 4},
+		},
+		{
+			name:   "nil",
+			input:  nil,
+			input2: []int{3, 4},
+			want:   []int{3, 4},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := NewSlice(tt.input).Append(tt.input2...).ToSlice()
+			assert.Equal(t, tt.want, got)
+
+			got[0] = 100000
+			if len(tt.input) > 0 && len(got) > 0 {
+				assert.NotEqual(t, tt.want[0], got[0])
+			}
+
+		})
+	}
+}
+
 func TestSliceCount(t *testing.T) {
 	tests := []struct {
 		name  string
@@ -326,6 +378,12 @@ func TestSliceFindFunc(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got := NewSlice(tt.input).FindFunc(tt.predicate)
 			assert.Equal(t, tt.want, got)
+
+			got = NewSlice(tt.input).Parallel(4).FindFunc(tt.predicate)
+			if got == -1 && tt.want != got {
+				assert.Equal(t, tt.input[tt.want], tt.input[got])
+			}
+
 		})
 	}
 }

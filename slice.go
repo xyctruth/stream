@@ -95,6 +95,15 @@ func (stream sliceStream[Elem]) AnyMatch(predicate func(Elem) bool) bool {
 	return false
 }
 
+// Append appends elements to the end of this stream
+func (stream sliceStream[Elem]) Append(elements ...Elem) sliceStream[Elem] {
+	newSlice := make([]Elem, 0, len(stream.slice)+len(elements))
+	newSlice = append(newSlice, stream.slice...)
+	newSlice = append(newSlice, elements...)
+	stream.slice = newSlice
+	return stream
+}
+
 // Count Returns the count of elements in this stream.
 func (stream sliceStream[Elem]) Count() int {
 	return len(stream.slice)
@@ -135,7 +144,7 @@ func (stream sliceStream[Elem]) ForEach(action func(int, Elem)) sliceStream[Elem
 	return stream
 }
 
-// First Performs an action for each element of this stream.
+// First Returns the first element in the stream.
 // If the slice is empty or nil then Elem Type default value is returned.
 func (stream sliceStream[Elem]) First() Elem {
 	if len(stream.slice) == 0 {
@@ -147,7 +156,22 @@ func (stream sliceStream[Elem]) First() Elem {
 
 // FindFunc Returns the index of the first element in the stream that matches the provided predicate.
 // If not found then -1 is returned.
+//
+// Support Parallel.
+// Parallel side effect is that the element found may not be the first to appear
 func (stream sliceStream[Elem]) FindFunc(predicate func(Elem) bool) int {
+	if stream.parallel {
+		handler := func(index int, v Elem) (isReturn bool, taskResult int) {
+			return predicate(v), index
+		}
+		return parallelProcess[Elem, int, int](
+			stream.goroutines,
+			stream.slice,
+			handler,
+			singleResultHandler(-1),
+			false)
+	}
+
 	for i, v := range stream.slice {
 		if predicate(v) {
 			return i
