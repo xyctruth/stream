@@ -1,7 +1,7 @@
 package stream
 
-func parallelResultHandlerMatch(defaultVal bool) parallelResultHandler[bool, bool] {
-	return func(taskResultCh chan []bool) bool {
+func singleResultHandler[Elem any](defaultVal Elem) parallelResultHandler[Elem, Elem] {
+	return func(taskResultCh chan []Elem) Elem {
 		for result := range taskResultCh {
 			for _, r := range result {
 				return r
@@ -11,15 +11,15 @@ func parallelResultHandlerMatch(defaultVal bool) parallelResultHandler[bool, boo
 	}
 }
 
-func parallelResultHandlerEach[Elem any](count int) parallelResultHandler[Elem, []Elem] {
+func multipleResultHandler[Elem any](count int) parallelResultHandler[Elem, []Elem] {
 	return func(taskResultCh chan []Elem) []Elem {
-		newSlice := make([]Elem, 0, count)
+		results := make([]Elem, 0, count)
 		for result := range taskResultCh {
 			for _, r := range result {
-				newSlice = append(newSlice, r)
+				results = append(results, r)
 			}
 		}
-		return newSlice
+		return results
 	}
 }
 

@@ -44,10 +44,9 @@ func (p parallel[Elem, TaskResult, Result]) process() Result {
 
 	if len(p.slice) > 0 {
 		partitions, size := partition(p.slice, p.goroutines)
-
 		wg.Add(len(partitions))
 		for i, s := range partitions {
-			go p.task(ctx, &wg, s, i*size)
+			go p.task(ctx, &wg, cancel, s, i*size)
 		}
 	}
 
@@ -60,7 +59,7 @@ func (p parallel[Elem, TaskResult, Result]) process() Result {
 	return result
 }
 
-func (p parallel[Elem, TaskResult, Result]) task(ctx context.Context, wg *sync.WaitGroup, slice []Elem, offset int) {
+func (p parallel[Elem, TaskResult, Result]) task(ctx context.Context, wg *sync.WaitGroup, cancel context.CancelFunc, slice []Elem, offset int) {
 	defer wg.Done()
 
 	if p.isWaitAllDone {
@@ -85,6 +84,8 @@ func (p parallel[Elem, TaskResult, Result]) task(ctx context.Context, wg *sync.W
 			isReturn, r := p.handler(i+offset, elem)
 			if isReturn {
 				p.taskResultCh <- []TaskResult{r}
+				cancel()
+				return
 			}
 		}
 	}

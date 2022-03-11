@@ -51,14 +51,13 @@ func (stream sliceStream[Elem]) At(index int) Elem {
 func (stream sliceStream[Elem]) AllMatch(predicate func(Elem) bool) bool {
 	if stream.parallel {
 		handler := func(index int, v Elem) (isReturn bool, taskResult bool) {
-			isReturn = !predicate(v)
-			return isReturn, false
+			return !predicate(v), false
 		}
 		return parallelProcess[Elem, bool, bool](
 			stream.goroutines,
 			stream.slice,
 			handler,
-			parallelResultHandlerMatch(true),
+			singleResultHandler(true),
 			false)
 	}
 
@@ -78,14 +77,13 @@ func (stream sliceStream[Elem]) AllMatch(predicate func(Elem) bool) bool {
 func (stream sliceStream[Elem]) AnyMatch(predicate func(Elem) bool) bool {
 	if stream.parallel {
 		handler := func(index int, v Elem) (isReturn bool, taskResult bool) {
-			isReturn = predicate(v)
-			return isReturn, true
+			return predicate(v), true
 		}
 		return parallelProcess[Elem, bool, bool](
 			stream.goroutines,
 			stream.slice,
 			handler,
-			parallelResultHandlerMatch(false),
+			singleResultHandler(false),
 			false)
 	}
 
@@ -126,7 +124,7 @@ func (stream sliceStream[Elem]) ForEach(action func(int, Elem)) sliceStream[Elem
 			stream.goroutines,
 			stream.slice,
 			handler,
-			parallelResultHandlerEach[Elem](len(stream.slice)),
+			multipleResultHandler[Elem](len(stream.slice)),
 			true)
 		return stream
 	}
@@ -176,7 +174,7 @@ func (stream sliceStream[Elem]) Filter(predicate func(Elem) bool) sliceStream[El
 			stream.goroutines,
 			stream.slice,
 			handler,
-			parallelResultHandlerEach[Elem](len(stream.slice)),
+			multipleResultHandler[Elem](len(stream.slice)),
 			true)
 		stream.slice = newSlice
 		return stream
@@ -224,7 +222,7 @@ func (stream sliceStream[Elem]) Map(mapper func(Elem) Elem) sliceStream[Elem] {
 			stream.goroutines,
 			stream.slice,
 			handler,
-			parallelResultHandlerEach[Elem](len(stream.slice)),
+			multipleResultHandler[Elem](len(stream.slice)),
 			true)
 		stream.slice = newSlice
 		return stream

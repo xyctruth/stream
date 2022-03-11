@@ -3,8 +3,6 @@ run:
 
   skip-files:
     - ".*_test.go$"
-  skip-dirs:
-    - "v1175"
 
 linters:
   enable:
@@ -25,26 +23,3 @@ linters:
     - nolintlint
     - revive
     - wastedassign
-issues:
-  exclude-rules:
-    - linters:
-        - gosec
-      text: "G108"
-    - linters:
-        - gosec
-      text: "G404"
-    - linters:
-        - gosec
-      text: "G201"
-    - linters:
-        - govet
-      text: "sigchanyzer: misuse of unbuffered os.Signal channel as argument to signal.Notify"
-    - linters:
-        - staticcheck
-      text: "SA1017"
-    - linters:
-        - revive
-      text: "exported: type name will be used as collector.CollectorConfig by other packages,"
-    - linters:
-        - revive
-      text: "blank-imports: a blank import should be only in a main or test package"
