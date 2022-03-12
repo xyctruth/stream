@@ -1,4 +1,4 @@
-# Stream [WIP]
+# Stream
 
 [![Build](https://github.com/xyctruth/stream/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/xyctruth/stream/actions/workflows/build.yml)
 [![codecov](https://codecov.io/gh/xyctruth/stream/branch/main/graph/badge.svg?token=ZHMPMQP0CP)](https://codecov.io/gh/xyctruth/stream)
@@ -10,8 +10,6 @@
 Stream 是一个基于 golang 1.18+ 泛型的流库，支持并行。(像Java流一样操作切片)
 
 ## 入门
-
-### 基础
 
 ```go
 s := stream.NewSliceByOrdered([]string{"d", "a", "b", "c", "a"}).
@@ -44,14 +42,24 @@ stream.NewSliceByOrdered([]int{1, 2, 3, 7, 1})
 
 ### 并行
 
-`Parallel` 函数接收一个 `goroutines int` 参数. 如果 goroutines>1 则创建相同数量的goroutines执行, 否则关闭并行, 默认流是关闭并行的。
+`Parallel` 函数接收一个 `goroutines int` 参数. 如果 goroutines>1 则开启并行, 否则关闭并行, 默认流是关闭并行的。
+
+并行会将流中的元素平均划分多个的分区, 并创建相同数量的 goroutine 执行, 并且会保证流元素的原始顺序. 
 
 ```go
 s := stream.NewSliceByOrdered([]string{"d", "a", "b", "c", "a"}).
     Parallel(10).
-    Filter(func(s string) bool { return s != "b" }).
-    Map(func(s string) string { return "class_" + s }).
-    Sort().
-    Distinct().
-    ToSlice()
+    Filter(func(s string) bool {
+    // some time-consuming operations
+    return s != "b"
+    }).
+    Map(func(s string) string {
+    // some time-consuming operations
+    return "class_" + s
+    }).
+    ForEach(
+    func(index int, s string) {
+    // some time-consuming operations
+    },
+    ).ToSlice()
 ```

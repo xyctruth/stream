@@ -27,27 +27,29 @@ func multipleResultHandler[Elem any](count int) parallelResultHandler[Elem, []El
 	}
 }
 
-type partition[Elem any] struct {
-	slice      []Elem
-	startIndex int
+// partition  Uniform slices
+// This selects a half-open range which includes the first element, but excludes the last.
+type partition struct {
+	low  int //includes index
+	high int //excludes index
 }
 
-func partitionHandler[Elem any](slice []Elem, goroutines int) []partition[Elem] {
+func partitionHandler[Elem any](slice []Elem, goroutines int) []partition {
 	l := len(slice)
 	if goroutines > l {
 		goroutines = l
 	}
-	partitions := make([]partition[Elem], 0, goroutines)
-
+	partitions := make([]partition, 0, goroutines)
 	size := l / goroutines
 	rem := l % goroutines
-	var rg = [2]int{0, size}
+	low := 0
+	high := size
 	for i := 0; i < goroutines; i++ {
-		partitions = append(partitions, partition[Elem]{slice: slice[rg[0]:rg[1]], startIndex: rg[0]})
-		rg[0] = rg[1];
-		rg[1] = rg[0] + size;
-		if i + rem + 1 >= goroutines{
-			rg[1] = rg[1] + 1;
+		partitions = append(partitions, partition{low, high})
+		low = high
+		high = high + size
+		if i+rem+1 >= goroutines {
+			high++
 		}
 	}
 	return partitions

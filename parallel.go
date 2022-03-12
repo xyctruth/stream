@@ -42,8 +42,8 @@ func (p parallel[Elem, TaskResult, Result]) process() Result {
 		partitions := partitionHandler(p.slice, p.goroutines)
 		p.taskResultChs = make([]chan []TaskResult, len(partitions))
 		for i, part := range partitions {
-			p.taskResultChs[i] = make(chan []TaskResult, len(part.slice))
-			go p.task(ctx, cancel, p.taskResultChs[i], part.slice, part.startIndex)
+			p.taskResultChs[i] = make(chan []TaskResult, part.high-part.low)
+			go p.task(ctx, cancel, p.taskResultChs[i], part)
 		}
 	}
 
@@ -51,13 +51,13 @@ func (p parallel[Elem, TaskResult, Result]) process() Result {
 	return result
 }
 
-func (p parallel[Elem, TaskResult, Result]) task(ctx context.Context, cancel context.CancelFunc, ch chan []TaskResult, slice []Elem, offset int) {
+func (p parallel[Elem, TaskResult, Result]) task(ctx context.Context, cancel context.CancelFunc, ch chan []TaskResult, part partition) {
 	defer close(ch)
 
 	if p.isWaitAllDone {
-		ret := make([]TaskResult, 0, len(slice))
-		for i, elem := range slice {
-			isReturn, r := p.handler(i+offset, elem)
+		ret := make([]TaskResult, 0, part.high-part.low)
+		for i := part.low; i < part.high; i++ {
+			isReturn, r := p.handler(i+part.low, p.slice[i])
 			if isReturn {
 				ret = append(ret, r)
 			}
@@ -68,12 +68,12 @@ func (p parallel[Elem, TaskResult, Result]) task(ctx context.Context, cancel con
 		return
 	}
 
-	for i, elem := range slice {
+	for i := part.low; i < part.high; i++ {
 		select {
 		case <-ctx.Done():
 			return
 		default:
-			isReturn, r := p.handler(i+offset, elem)
+			isReturn, r := p.handler(i+part.low, p.slice[i])
 			if isReturn {
 				ch <- []TaskResult{r}
 				cancel()

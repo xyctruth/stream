@@ -1,4 +1,4 @@
-# Stream [WIP]
+# Stream
 
 [![Build](https://github.com/xyctruth/stream/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/xyctruth/stream/actions/workflows/build.yml)
 [![codecov](https://codecov.io/gh/xyctruth/stream/branch/main/graph/badge.svg?token=ZHMPMQP0CP)](https://codecov.io/gh/xyctruth/stream)
@@ -10,8 +10,6 @@
 Stream is a stream library based on golang 1.18+ generics, support parallel. (manipulate slice like java stream)
 
 ## Getting Started
-
-### Basic
 
 ```go
 s := stream.NewSliceByOrdered([]string{"d", "a", "b", "c", "a"}).
@@ -44,14 +42,24 @@ stream.NewSliceByOrdered([]int{1, 2, 3, 7, 1})
 
 ### Parallel
 
-The `Parallel` function accept a `goroutines int` parameter. If goroutines>1, create the same number of goroutines to execute, otherwise close Parallel, the stream parallel is off by default.
+The `Parallel` function accept a `goroutines int` parameter. If goroutines>1, open Parallel , otherwise close Parallel, the stream Parallel is off by default.
+
+Parallel will divide the elements in the stream into multiple partitions equally, and create the same number of goroutine to execute, and the original order of the elements of the stream will be guaranteed.
 
 ```go
 s := stream.NewSliceByOrdered([]string{"d", "a", "b", "c", "a"}).
     Parallel(10).
-    Filter(func(s string) bool { return s != "b" }).
-    Map(func(s string) string { return "class_" + s }).
-    Sort().
-    Distinct().
-    ToSlice()
+    Filter(func(s string) bool {
+    // some time-consuming operations
+    return s != "b"
+    }).
+    Map(func(s string) string {
+    // some time-consuming operations
+    return "class_" + s
+    }).
+    ForEach(
+    func(index int, s string) {
+    // some time-consuming operations
+    },
+    ).ToSlice()
 ```

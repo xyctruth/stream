@@ -10,114 +10,114 @@ func TestPartition(t *testing.T) {
 		name      string
 		input     []int
 		goroutine int
-		want1     []partition[int]
+		want1     []partition
 		want2     int
 	}{
 		{
 			name:      "case",
-			input:     []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13},
+			input:     []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12},
 			goroutine: 2,
-			want1: []partition[int]{
+			want1: []partition{
 				{
-					slice:      []int{1, 2, 3, 4, 5, 6},
-					startIndex: 0,
+					low:  0,
+					high: 6,
 				},
 				{
-					slice:      []int{7, 8, 9, 10, 11, 12, 13},
-					startIndex: 6,
+					low:  6,
+					high: 13,
 				},
 			},
 		},
 		{
 			name:      "case",
-			input:     []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13},
+			input:     []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12},
 			goroutine: 3,
-			want1: []partition[int]{
+			want1: []partition{
 				{
-					slice:      []int{1, 2, 3, 4},
-					startIndex: 0,
+					low:  0,
+					high: 4,
 				},
 				{
-					slice:      []int{5, 6, 7, 8},
-					startIndex: 4,
+					low:  4,
+					high: 8,
 				},
 				{
-					slice:      []int{9, 10, 11, 12, 13},
-					startIndex: 8,
+					low:  8,
+					high: 13,
 				},
 			},
 		},
 		{
 			name:      "case",
-			input:     []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13},
+			input:     []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12},
 			goroutine: 5,
-			want1: []partition[int]{
+			want1: []partition{
 				{
-					slice:      []int{1, 2},
-					startIndex: 0,
+					low:  0,
+					high: 2,
 				},
 				{
-					slice:      []int{3, 4},
-					startIndex: 2,
+					low:  2,
+					high: 4,
 				},
 				{
-					slice:      []int{5, 6, 7},  
-					startIndex: 4,            
+					low:  4,
+					high: 7,
 				},
 				{
-					slice:      []int{8, 9, 10}, 
-					startIndex: 7,           
+					low:  7,
+					high: 10,
 				},
 				{
-					slice:      []int{11, 12, 13},
-					startIndex: 10,                        
+					low:  10,
+					high: 13,
 				},
 			},
 		},
 		{
 			name:      "case",
-			input:     []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13},
+			input:     []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12},
 			goroutine: 10,
-			want1: []partition[int]{
+			want1: []partition{
 				{
-					slice:      []int{1},
-					startIndex: 0,
+					low:  0,
+					high: 1,
 				},
 				{
-					slice:      []int{2},
-					startIndex: 1,
+					low:  1,
+					high: 2,
 				},
 				{
-					slice:      []int{3},
-					startIndex: 2,
+					low:  2,
+					high: 3,
 				},
 				{
-					slice:      []int{4},
-					startIndex: 3,
+					low:  3,
+					high: 4,
 				},
 				{
-					slice:      []int{5},
-					startIndex: 4,
+					low:  4,
+					high: 5,
 				},
 				{
-					slice:      []int{6},
-					startIndex: 5,
+					low:  5,
+					high: 6,
 				},
 				{
-					slice:      []int{7},
-					startIndex: 6,
+					low:  6,
+					high: 7,
 				},
 				{
-					slice:      []int{8, 9}, 
-					startIndex: 7,        
+					low:  7,
+					high: 9,
 				},
 				{
-					slice:      []int{10, 11},  
-					startIndex: 9,       
+					low:  9,
+					high: 11,
 				},
 				{
-					slice:      []int{12, 13},  
-					startIndex: 11,                     
+					low:  11,
+					high: 13,
 				},
 			},
 		},
