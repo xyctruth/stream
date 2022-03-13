@@ -1,13 +1,9 @@
-# Stream
+# Stream: A Stream library based on Go 1.18+ Generics (Support Parallel Stream)
 
 [![Build](https://github.com/xyctruth/stream/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/xyctruth/stream/actions/workflows/build.yml)
 [![codecov](https://codecov.io/gh/xyctruth/stream/branch/main/graph/badge.svg?token=ZHMPMQP0CP)](https://codecov.io/gh/xyctruth/stream)
 
 > [English](./README.md) / [中文](./README-ZH.md)
-
-## Introduction
-
-Stream is a stream library based on golang 1.18+ generics, support parallel. (manipulate slice like java stream)
 
 ## Getting Started
 
@@ -63,3 +59,59 @@ s := stream.NewSliceByOrdered([]string{"d", "a", "b", "c", "a"}).
     },
     ).ToSlice()
 ```
+
+### Parallel goroutines
+
+The number of parallel goroutines has different choices for CPU operations and IO operations. Generally, the number of goroutines does not need to be set larger than the number of CPU cores for CPU operations, while the number of goroutines for IO operations can be set to be much larger than the number of CPU cores.
+
+#### CPU operations
+
+[BenchmarkParallelByCPU](./parallel_bench_test.go)
+
+```go
+NewSlice(s).Parallel(tt.goroutines).ForEach(func(i int, v int) {
+    sort.Ints(newArray(1000)) // Simulate time-consuming CPU operations
+})
+```
+
+```bash
+go test -run=^$ -benchtime=5s -cpu=6  -bench=^BenchmarkParallelByCPU
+
+goarch: amd64
+pkg: github.com/xyctruth/stream
+cpu: Intel(R) Core(TM) i7-8750H CPU @ 2.20GHz
+BenchmarkParallelByCPU/no_parallel(0)-6         	     717	   9183119 ns/op
+BenchmarkParallelByCPU/goroutines(2)-6          	    1396	   4303113 ns/op
+BenchmarkParallelByCPU/goroutines(4)-6          	    2539	   2388197 ns/op
+BenchmarkParallelByCPU/goroutines(6)-6          	    2932	   2159407 ns/op
+BenchmarkParallelByCPU/goroutines(8)-6          	    2334	   2577405 ns/op
+BenchmarkParallelByCPU/goroutines(10)-6         	    2649	   2352926 ns/op
+```
+
+#### IO operations
+
+[BenchmarkParallelByIO](./parallel_bench_test.go)
+
+```go
+NewSlice(s).Parallel(tt.goroutines).ForEach(func(i int, v int) {
+    time.Sleep(time.Millisecond) // Simulate time-consuming IO operations
+})
+```
+
+```bash
+go test -run=^$ -benchtime=5s -cpu=6  -bench=^BenchmarkParallelByIO
+
+goos: darwin
+goarch: amd64
+pkg: github.com/xyctruth/stream
+cpu: Intel(R) Core(TM) i7-8750H CPU @ 2.20GHz
+BenchmarkParallelByIO/no_parallel(0)-6          	      52	 102023558 ns/op
+BenchmarkParallelByIO/goroutines(2)-6           	     100	  55807303 ns/op
+BenchmarkParallelByIO/goroutines(4)-6           	     214	  27868725 ns/op
+BenchmarkParallelByIO/goroutines(6)-6           	     315	  18925789 ns/op
+BenchmarkParallelByIO/goroutines(8)-6           	     411	  14439700 ns/op
+BenchmarkParallelByIO/goroutines(10)-6          	     537	  11164758 ns/op
+BenchmarkParallelByIO/goroutines(50)-6          	    2629	   2310602 ns/op
+BenchmarkParallelByIO/goroutines(100)-6         	    5094	   1221887 ns/op
+```
+
