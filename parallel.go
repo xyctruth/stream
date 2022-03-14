@@ -5,11 +5,20 @@ import (
 )
 
 type parallel[Elem any, TaskResult any, Result any] struct {
-	goroutines    int
-	slice         []Elem
-	handler       parallelHandler[Elem, TaskResult]
-	resultHandler parallelResultHandler[TaskResult, Result]
+	// number of goroutine
+	goroutines int
+	slice      []Elem
+	handler    parallelHandler[Elem, TaskResult]
+
+	// Pass parallel processing results
 	taskResultChs []chan []TaskResult
+	// Process the  parallel returned result
+	// implement singleResultHandler, multipleResultHandler
+	resultHandler parallelResultHandler[TaskResult, Result]
+
+	// Whether to wait for all elements to complete
+	// true:  All elements need to be processed. Collaborate singleResultHandler
+	// false: Get the first matching value, end the parallel. Collaborate multipleResultHandler
 	isWaitAllDone bool
 }
 
@@ -17,6 +26,7 @@ type parallelHandler[Elem any, TaskResult any] func(index int, elem Elem) (isRet
 
 type parallelResultHandler[TaskResult any, Result any] func(taskResultChs []chan []TaskResult) Result
 
+// parallelProcess Provides parallel processing capabilities.
 func parallelProcess[Elem any, TaskResult any, Result any](
 	goroutines int,
 	slice []Elem,
@@ -54,6 +64,7 @@ func (p parallel[Elem, TaskResult, Result]) process() Result {
 func (p parallel[Elem, TaskResult, Result]) task(ctx context.Context, cancel context.CancelFunc, ch chan []TaskResult, part partition) {
 	defer close(ch)
 
+	//  All elements need to be processed
 	if p.isWaitAllDone {
 		ret := make([]TaskResult, 0, part.high-part.low)
 		for i := part.low; i < part.high; i++ {
@@ -68,6 +79,7 @@ func (p parallel[Elem, TaskResult, Result]) task(ctx context.Context, cancel con
 		return
 	}
 
+	// Get the first matching value, end the parallel
 	for i := part.low; i < part.high; i++ {
 		select {
 		case <-ctx.Done():

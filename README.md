@@ -5,6 +5,8 @@
 
 > [English](./README.md) / [中文](./README-ZH.md)
 
+Stream is a Stream library based on Go 1.18+ Generics. It supports parallel processing of data in the stream. The parallel stream will divide the elements into multiple partitions equally, and create the same number of goroutine for execute, and will ensure that the elements in the stream remain in the original order after the processing is complete.
+
 ## Getting Started
 
 ```go
@@ -16,7 +18,7 @@ s := stream.NewSliceByOrdered([]string{"d", "a", "b", "c", "a"}).
     ToSlice()
 ```
 
-### Constraints
+## Constraints
 
 `any` accepts elements of any type, so you cannot use `==` `!=` `>` `<` to compare elements, which will prevent you from using Sort(), Find()... functions, but you can use SortFunc(fn), FindFunc(fn)... instead
 
@@ -36,11 +38,11 @@ stream.NewSliceByComparable([]int{1, 2, 3, 7, 1})
 stream.NewSliceByOrdered([]int{1, 2, 3, 7, 1})
 ```
 
-### Parallel
+## Parallel
 
 The `Parallel` function accept a `goroutines int` parameter. If goroutines>1, open Parallel , otherwise close Parallel, the stream Parallel is off by default.
 
-Parallel will divide the elements in the stream into multiple partitions equally, and create the same number of goroutine to execute, and the original order of the elements of the stream will be guaranteed.
+Parallel will divide the elements in the stream into multiple partitions equally, and create the same number of goroutine to execute, and it will ensure that the elements in the stream remain in the original order after processing is complete.
 
 ```go
 s := stream.NewSliceByOrdered([]string{"d", "a", "b", "c", "a"}).
@@ -64,7 +66,7 @@ s := stream.NewSliceByOrdered([]string{"d", "a", "b", "c", "a"}).
 
 The number of parallel goroutines has different choices for CPU operations and IO operations. Generally, the number of goroutines does not need to be set larger than the number of CPU cores for CPU operations, while the number of goroutines for IO operations can be set to be much larger than the number of CPU cores.
 
-#### CPU operations
+#### CPU Operations
 
 [BenchmarkParallelByCPU](./parallel_bench_test.go)
 
@@ -74,7 +76,7 @@ NewSlice(s).Parallel(tt.goroutines).ForEach(func(i int, v int) {
 })
 ```
 
-```bash
+```go
 go test -run=^$ -benchtime=5s -cpu=6  -bench=^BenchmarkParallelByCPU
 
 goarch: amd64
@@ -88,7 +90,7 @@ BenchmarkParallelByCPU/goroutines(8)-6          	    2334	   2577405 ns/op
 BenchmarkParallelByCPU/goroutines(10)-6         	    2649	   2352926 ns/op
 ```
 
-#### IO operations
+#### IO Operations
 
 [BenchmarkParallelByIO](./parallel_bench_test.go)
 
@@ -98,7 +100,7 @@ NewSlice(s).Parallel(tt.goroutines).ForEach(func(i int, v int) {
 })
 ```
 
-```bash
+```go
 go test -run=^$ -benchtime=5s -cpu=6  -bench=^BenchmarkParallelByIO
 
 goos: darwin

@@ -5,6 +5,8 @@
 
 > [English](./README.md) / [中文](./README-ZH.md)
 
+Stream 是一个基于 Go 1.18+ 泛型的流库, 它支持并行处理流中的数据. 并行流会将元素平均划分多个的分区, 并创建相同数量的 goroutine 执行, 并且会保证处理完成后流中元素保持原始顺序.
+
 ## 入门
 
 ```go
@@ -16,7 +18,7 @@ s := stream.NewSliceByOrdered([]string{"d", "a", "b", "c", "a"}).
     ToSlice()
 ```
 
-### 约束
+## 约束
 
 `any` 接受任何类型的元素, 所以不能使用 `==` `!=` `>` `<` 比较元素, 导致你不能使用 Sort(), Find()...等函数 ,但是你可以使用 SortFunc(fn), FindFunc(fn)... 代替
 
@@ -36,11 +38,11 @@ stream.NewSliceByComparable([]int{1, 2, 3, 7, 1})
 stream.NewSliceByOrdered([]int{1, 2, 3, 7, 1})
 ```
 
-### 并行
+## 并行
 
 `Parallel` 函数接收一个 `goroutines int` 参数. 如果 goroutines>1 则开启并行, 否则关闭并行, 默认流是关闭并行的。
 
-并行会将流中的元素平均划分多个的分区, 并创建相同数量的 goroutine 执行, 并且会保证流元素的原始顺序. 
+并行会将流中的元素平均划分多个的分区, 并创建相同数量的 goroutine 执行, 并且会保证处理完成后流中元素保持原始顺序.
 
 ```go
 s := stream.NewSliceByOrdered([]string{"d", "a", "b", "c", "a"}).
@@ -74,7 +76,7 @@ NewSlice(s).Parallel(goroutines).ForEach(func(i int, v int) {
 })
 ```
 
-```bash
+```go
 go test -run=^$ -benchtime=5s -cpu=6  -bench=^BenchmarkParallelByCPU
 
 goarch: amd64
@@ -98,7 +100,7 @@ NewSlice(s).Parallel(goroutines).ForEach(func(i int, v int) {
 })
 ```
 
-```bash
+```go
 go test -run=^$ -benchtime=5s -cpu=6  -bench=^BenchmarkParallelByIO
 
 goos: darwin

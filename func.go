@@ -1,5 +1,8 @@
 package stream
 
+// singleResultHandler A handler for parallelProcess of a single return value.
+// Get the first return value, and the parallel processing ends.
+// For sliceStream.AllMatch, sliceStream.AnyMatch, sliceStream.FindFunc.
 func singleResultHandler[Elem any](defaultVal Elem) parallelResultHandler[Elem, Elem] {
 	return func(taskResultChs []chan []Elem) Elem {
 		for _, ch := range taskResultChs {
@@ -13,6 +16,9 @@ func singleResultHandler[Elem any](defaultVal Elem) parallelResultHandler[Elem, 
 	}
 }
 
+// multipleResultHandler A handler for parallelProcess of a multiple return value.
+// Need to get the results of all parallel processing.
+// For sliceStream.Map, sliceStream.ForEach, sliceStream.Filter.
 func multipleResultHandler[Elem any](count int) parallelResultHandler[Elem, []Elem] {
 	return func(taskResultChs []chan []Elem) []Elem {
 		results := make([]Elem, 0, count)
@@ -34,6 +40,7 @@ type partition struct {
 	high int //excludes index
 }
 
+// partitionHandler Given a specified slice, evenly partition according to the slice.
 func partitionHandler[Elem any](slice []Elem, goroutines int) []partition {
 	l := len(slice)
 	if goroutines > l {
