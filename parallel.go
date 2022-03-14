@@ -57,7 +57,7 @@ func (p parallel[Elem, TaskResult, Result]) task(ctx context.Context, cancel con
 	if p.isWaitAllDone {
 		ret := make([]TaskResult, 0, part.high-part.low)
 		for i := part.low; i < part.high; i++ {
-			isReturn, r := p.handler(i+part.low, p.slice[i])
+			isReturn, r := p.handler(i, p.slice[i])
 			if isReturn {
 				ret = append(ret, r)
 			}
