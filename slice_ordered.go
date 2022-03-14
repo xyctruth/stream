@@ -20,13 +20,20 @@ func (stream sliceOrderedStream[Elem]) Parallel(goroutines int) sliceOrderedStre
 	return stream
 }
 
+// IsSorted reports whether x is sorted in ascending order.
+// Compare according to the constraints.Ordered.
+// If the slice is empty or nil then true is returned.
+func (stream sliceOrderedStream[Elem]) IsSorted() bool {
+	return slices.IsSorted(stream.slice)
+}
+
 // Max Returns the maximum element of this stream.
 // Compare according to the constraints.Ordered.
 // If the slice is empty or nil then Elem Type default value is returned.
 func (stream sliceOrderedStream[Elem]) Max() Elem {
 	var max Elem
-	for _, v := range stream.slice {
-		if v > max {
+	for i, v := range stream.slice {
+		if v > max || i == 0 {
 			max = v
 		}
 	}

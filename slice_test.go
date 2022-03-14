@@ -466,6 +466,153 @@ func TestSliceFirst(t *testing.T) {
 	}
 }
 
+func TestSliceInsert(t *testing.T) {
+	tests := []struct {
+		name   string
+		input1 []int
+		input2 []int
+		input3 int
+		want   []int
+	}{
+		{
+			name:   "normal",
+			input1: []int{1, 2, 3},
+			input2: []int{4, 5},
+			input3: 1,
+			want:   []int{1, 4, 5, 2, 3},
+		},
+		{
+			name:   "normal",
+			input1: []int{1, 2, 3},
+			input2: []int{4, 5},
+			input3: 3,
+			want:   []int{1, 2, 3, 4, 5},
+		},
+		{
+			name:   "normal",
+			input1: []int{1, 2, 3},
+			input2: []int{4, 5},
+			input3: 5,
+			want:   []int{1, 2, 3, 4, 5},
+		},
+		{
+			name:   "empty",
+			input1: []int{},
+			input2: []int{4, 5},
+			input3: 0,
+			want:   []int{4, 5},
+		},
+		{
+			name:   "nil",
+			input1: []int{},
+			input2: []int{4, 5},
+			input3: 0,
+			want:   []int{4, 5},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := NewSlice(tt.input1).Insert(tt.input3, tt.input2...).ToSlice()
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestSliceDelete(t *testing.T) {
+	tests := []struct {
+		name   string
+		input1 []int
+		input2 int
+		input3 int
+		want   []int
+	}{
+		{
+			name:   "normal",
+			input1: []int{1, 2, 3},
+			input2: 1,
+			input3: 2,
+			want:   []int{1, 3},
+		},
+		{
+			name:   "normal",
+			input1: []int{1, 2, 3},
+			input2: 0,
+			input3: 1,
+			want:   []int{2, 3},
+		},
+		{
+			name:   "empty",
+			input1: []int{},
+			input2: 0,
+			input3: 1,
+			want:   []int{},
+		},
+		{
+			name:   "nil",
+			input1: []int{},
+			input2: 0,
+			input3: 1,
+			want:   []int{},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := NewSlice(tt.input1).Delete(tt.input2, tt.input3).ToSlice()
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestSliceIsSorted(t *testing.T) {
+	tests := []struct {
+		name  string
+		input []int
+		want  bool
+	}{
+		{
+			name:  "normal",
+			input: []int{1, 2, 1, 5},
+			want:  false,
+		},
+		{
+			name:  "normal",
+			input: []int{-1, -2, -1, -5},
+			want:  false,
+		},
+		{
+			name:  "normal",
+			input: []int{10, 11, 12, 13},
+			want:  true,
+		},
+		{
+			name:  "normal",
+			input: []int{-1, -2, -3, -4},
+			want:  false,
+		},
+		{
+			name:  "normal",
+			input: []int{-4, -3, -2, -1},
+			want:  true,
+		},
+		{
+			name:  "empty",
+			input: []int{},
+			want:  true,
+		},
+		{
+			name:  "nil",
+			input: nil,
+			want:  true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := NewSlice(tt.input).IsSortedFunc(func(a, b int) bool { return a < b })
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
 func TestSliceLimit(t *testing.T) {
 	tests := []struct {
 		name  string
@@ -568,6 +715,86 @@ func TestSliceMap(t *testing.T) {
 			assert.Equal(t, tt.want, got)
 
 			got = NewSliceByOrdered(tt.input).Parallel(2).Map(tt.mapper).ToSlice()
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestSliceMaxFunc(t *testing.T) {
+	tests := []struct {
+		name  string
+		input []int
+		want  int
+	}{
+		{
+			name:  "normal",
+			input: []int{1, 2, 1, 5},
+			want:  5,
+		},
+		{
+			name:  "normal",
+			input: []int{-1, -2, -1, -5},
+			want:  -1,
+		},
+		{
+			name:  "normal",
+			input: []int{10, 2, 1, 5},
+			want:  10,
+		},
+		{
+			name:  "empty",
+			input: []int{},
+			want:  0,
+		},
+		{
+			name:  "nil",
+			input: nil,
+			want:  0,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := NewSlice(tt.input).MaxFunc(func(a, b int) bool { return a > b })
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestSliceMinFunc(t *testing.T) {
+	tests := []struct {
+		name  string
+		input []int
+		want  int
+	}{
+		{
+			name:  "normal",
+			input: []int{1, 2, 1, 5},
+			want:  1,
+		},
+		{
+			name:  "normal",
+			input: []int{10, 2, 3, 1},
+			want:  1,
+		},
+		{
+			name:  "normal",
+			input: []int{-1, -2, -3, -1},
+			want:  -3,
+		},
+		{
+			name:  "empty",
+			input: []int{},
+			want:  0,
+		},
+		{
+			name:  "nil",
+			input: nil,
+			want:  0,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := NewSliceByOrdered(tt.input).MinFunc(func(a, b int) bool { return a < b })
 			assert.Equal(t, tt.want, got)
 		})
 	}

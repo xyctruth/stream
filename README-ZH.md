@@ -48,16 +48,16 @@ stream.NewSliceByOrdered([]int{1, 2, 3, 7, 1})
 s := stream.NewSliceByOrdered([]string{"d", "a", "b", "c", "a"}).
     Parallel(10).
     Filter(func(s string) bool {
-    // some time-consuming operations
+    // 一些耗时操作
     return s != "b"
     }).
     Map(func(s string) string {
-    // some time-consuming operations
+    // 一些耗时操作
     return "class_" + s
     }).
     ForEach(
     func(index int, s string) {
-    // some time-consuming operations
+    // 一些耗时操作
     },
     ).ToSlice()
 ```
@@ -72,7 +72,7 @@ s := stream.NewSliceByOrdered([]string{"d", "a", "b", "c", "a"}).
 
 ```go
 NewSlice(s).Parallel(goroutines).ForEach(func(i int, v int) {
-    sort.Ints(newArray(1000)) // Simulate time-consuming CPU operations
+    sort.Ints(newArray(1000)) // 模拟 CPU 耗时操作
 })
 ```
 
@@ -96,7 +96,7 @@ BenchmarkParallelByCPU/goroutines(10)-6         	    2649	   2352926 ns/op
 
 ```go
 NewSlice(s).Parallel(goroutines).ForEach(func(i int, v int) {
-    time.Sleep(time.Millisecond) // Simulate time-consuming IO operations
+    time.Sleep(time.Millisecond) // 模拟 IO 耗时操作
 })
 ```
 

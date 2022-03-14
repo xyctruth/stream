@@ -213,6 +213,33 @@ func (stream sliceStream[Elem]) Filter(predicate func(Elem) bool) sliceStream[El
 	return stream
 }
 
+// Insert inserts the values v... into s at index
+// If index is out of range then use Append to the end
+func (stream sliceStream[Elem]) Insert(index int, elements ...Elem) sliceStream[Elem] {
+	if len(stream.slice) <= index {
+		return stream.Append(elements...)
+	}
+	stream.slice = slices.Insert(stream.slice, index, elements...)
+	return stream
+}
+
+// Delete Removes the elements s[i:j] from this stream, returning the modified stream.
+// If the slice is empty or nil then do nothing
+func (stream sliceStream[Elem]) Delete(i, j int) sliceStream[Elem] {
+	if len(stream.slice) == 0 {
+		return stream
+	}
+	stream.slice = slices.Delete(stream.slice, i, j)
+	return stream
+}
+
+// IsSortedFunc reports whether x is sorted in ascending order.
+// Compare according to the constraints.Ordered.
+// If the slice is empty or nil then true is returned.
+func (stream sliceStream[Elem]) IsSortedFunc(less func(a, b Elem) bool) bool {
+	return slices.IsSortedFunc(stream.slice, less)
+}
+
 // Limit Returns a stream consisting of the elements of this stream, truncated to be no longer than maxSize in length.
 func (stream sliceStream[Elem]) Limit(maxSize int) sliceStream[Elem] {
 	if stream.slice == nil {
@@ -254,6 +281,32 @@ func (stream sliceStream[Elem]) Map(mapper func(Elem) Elem) sliceStream[Elem] {
 		stream.slice[i] = mapper(v)
 	}
 	return stream
+}
+
+// MaxFunc Returns the maximum element of this stream.
+// - greater: return a > b
+// If the slice is empty or nil then Elem Type default value is returned.
+func (stream sliceStream[Elem]) MaxFunc(greater func(a, b Elem) bool) Elem {
+	var max Elem
+	for i, v := range stream.slice {
+		if greater(v, max) || i == 0 {
+			max = v
+		}
+	}
+	return max
+}
+
+// MinFunc Returns the minimum element of this stream.
+// - less: return a < b
+// If the slice is empty or nil then Elem Type default value is returned.
+func (stream sliceOrderedStream[Elem]) MinFunc(less func(a, b Elem) bool) Elem {
+	var min Elem
+	for i, v := range stream.slice {
+		if less(v, min) || i == 0 {
+			min = v
+		}
+	}
+	return min
 }
 
 // Reduce Returns a slice consisting of the elements of this stream.

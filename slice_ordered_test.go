@@ -5,6 +5,56 @@ import (
 	"testing"
 )
 
+func TestSliceOrderedIsSorted(t *testing.T) {
+	tests := []struct {
+		name  string
+		input []int
+		want  bool
+	}{
+		{
+			name:  "normal",
+			input: []int{1, 2, 1, 5},
+			want:  false,
+		},
+		{
+			name:  "normal",
+			input: []int{-1, -2, -1, -5},
+			want:  false,
+		},
+		{
+			name:  "normal",
+			input: []int{10, 11, 12, 13},
+			want:  true,
+		},
+		{
+			name:  "normal",
+			input: []int{-1, -2, -3, -4},
+			want:  false,
+		},
+		{
+			name:  "normal",
+			input: []int{-4, -3, -2, -1},
+			want:  true,
+		},
+		{
+			name:  "empty",
+			input: []int{},
+			want:  true,
+		},
+		{
+			name:  "nil",
+			input: nil,
+			want:  true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := NewSliceByOrdered(tt.input).IsSorted()
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
 func TestSliceOrderedMax(t *testing.T) {
 	tests := []struct {
 		name  string
@@ -15,6 +65,11 @@ func TestSliceOrderedMax(t *testing.T) {
 			name:  "normal",
 			input: []int{1, 2, 1, 5},
 			want:  5,
+		},
+		{
+			name:  "normal",
+			input: []int{-1, -2, -1, -5},
+			want:  -1,
 		},
 		{
 			name:  "normal",
@@ -55,6 +110,11 @@ func TestSliceOrderedMin(t *testing.T) {
 			name:  "normal",
 			input: []int{10, 2, 3, 1},
 			want:  1,
+		},
+		{
+			name:  "normal",
+			input: []int{-1, -2, -3, -1},
+			want:  -3,
 		},
 		{
 			name:  "empty",
