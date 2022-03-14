@@ -1,7 +1,6 @@
 package stream
 
 import (
-	"fmt"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -330,7 +329,7 @@ func TestSliceForEach(t *testing.T) {
 			got = NewSliceByOrdered(tt.input).ForEach(func(i int, v int) { assert.Equal(t, tt.want[i], v) }).ToSlice()
 			assert.Equal(t, tt.want, got)
 
-			got = NewSlice(tt.input).Parallel(10).ForEach(func(i int, v int) { fmt.Println(i, v) }).ToSlice()
+			got = NewSlice(tt.input).Parallel(10).ForEach(func(i int, v int) { assert.Equal(t, tt.want[i], v) }).ToSlice()
 			assert.Equal(t, tt.want, got)
 		})
 	}
