@@ -42,7 +42,7 @@ func (p parallel[Elem, TaskResult, Result]) process() Result {
 		partitions := partitionHandler(p.slice, p.goroutines)
 		p.taskResultChs = make([]chan []TaskResult, len(partitions))
 		for i, part := range partitions {
-			p.taskResultChs[i] = make(chan []TaskResult, part.high-part.low)
+			p.taskResultChs[i] = make(chan []TaskResult)
 			go p.task(ctx, cancel, p.taskResultChs[i], part)
 		}
 	}
