@@ -55,12 +55,16 @@ func (stream SliceStream[Elem]) AllMatch(predicate func(Elem) bool) bool {
 			return !predicate(v), false
 		}
 
-		return ParallelProcess[ParallelFirst[Elem, bool], Elem, bool](
+		results := ParallelProcess[ParallelFirst[Elem, bool], Elem, bool](
 			stream.goroutines,
 			stream.slice,
 			handler,
-			true,
-		)[0]
+		)
+
+		if len(results) > 0 {
+			return results[0]
+		}
+		return true
 	}
 
 	for _, v := range stream.slice {
@@ -81,12 +85,16 @@ func (stream SliceStream[Elem]) AnyMatch(predicate func(Elem) bool) bool {
 		handler := func(index int, v Elem) (isReturn bool, taskResult bool) {
 			return predicate(v), true
 		}
-		return ParallelProcess[ParallelFirst[Elem, bool], Elem, bool](
+		results := ParallelProcess[ParallelFirst[Elem, bool], Elem, bool](
 			stream.goroutines,
 			stream.slice,
 			handler,
-			false,
-		)[0]
+		)
+
+		if len(results) > 0 {
+			return results[0]
+		}
+		return false
 	}
 
 	for _, v := range stream.slice {
@@ -131,7 +139,7 @@ func (stream SliceStream[Elem]) ForEach(action func(int, Elem)) SliceStream[Elem
 			action(index, v)
 			return false, taskResult
 		}
-		ParallelProcess[ParallelAll[Elem, Elem], Elem, Elem](
+		ParallelProcess[ParallelAction[Elem, Elem], Elem, Elem](
 			stream.goroutines,
 			stream.slice,
 			handler)
@@ -163,11 +171,15 @@ func (stream SliceStream[Elem]) FindFunc(predicate func(Elem) bool) int {
 		handler := func(index int, v Elem) (isReturn bool, taskResult int) {
 			return predicate(v), index
 		}
-		return ParallelProcess[ParallelFirst[Elem, int], Elem, int](
+		results := ParallelProcess[ParallelFirst[Elem, int], Elem, int](
 			stream.goroutines,
 			stream.slice,
-			handler,
-			-1)[0]
+			handler)
+
+		if len(results) > 0 {
+			return results[0]
+		}
+		return -1
 	}
 
 	for i, v := range stream.slice {

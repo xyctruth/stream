@@ -6,47 +6,46 @@ import (
 )
 
 // ParallelFirst parallel processing ends as soon as the first return value is obtained.
+//
 // For SliceStream.AllMatch, SliceStream.AnyMatch, SliceStream.FindFunc.
-type ParallelFirst[Elem any, TaskResult any] struct {
-	// number of goroutine
-	goroutines int
-	slice      []Elem
-	handler    ParallelHandler[Elem, TaskResult]
+type ParallelFirst[Elem any, Result any] struct {
+	slice   []Elem                        // element to be processed
+	handler ParallelHandler[Elem, Result] // handler function
 }
 
-func (p ParallelFirst[Elem, TaskResult]) Process(goroutines int, slice []Elem, handler ParallelHandler[Elem, TaskResult], defaultResults ...TaskResult) []TaskResult {
-	p.goroutines = goroutines
+func (p ParallelFirst[Elem, Result]) Process(goroutines int, slice []Elem, handler ParallelHandler[Elem, Result]) []Result {
 	p.slice = slice
 	p.handler = handler
 
+	wg := sync.WaitGroup{}
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	partitions := partitionHandler(p.slice, p.goroutines)
-
-	wg := sync.WaitGroup{}
+	partitions := partition(p.slice, goroutines)
+	resultCh := make(chan Result, len(partitions))
 	wg.Add(len(partitions))
-	taskResultCh := make(chan TaskResult, len(partitions))
 
-	for _, part := range partitions {
-		go p.task(ctx, &wg, taskResultCh, part)
+	for _, pa := range partitions {
+		go p.do(ctx, &wg, resultCh, pa)
 	}
+
 	go func() {
 		wg.Wait()
-		close(taskResultCh)
+		close(resultCh)
 	}()
-	result := p.resultHandler(taskResultCh, defaultResults...)
+
+	result := p.resulted(resultCh)
 	return result
 }
 
-func (p ParallelFirst[Elem, TaskResult]) task(ctx context.Context, wg *sync.WaitGroup, taskResultCh chan TaskResult, part partition) {
+func (p ParallelFirst[_, Result]) do(ctx context.Context, wg *sync.WaitGroup, taskResultCh chan Result, pa part) {
 	defer wg.Done()
-	for i := part.low; i < part.high; i++ {
+	for i := pa.low; i < pa.high; i++ {
 		select {
 		case <-ctx.Done():
 			return
 		default:
-			isReturn, r := p.handler(i+part.low, p.slice[i])
+			isReturn, r := p.handler(i+pa.low, p.slice[i])
 			// Get the first matching value, end the parallel
 			if isReturn {
 				taskResultCh <- r
@@ -56,9 +55,9 @@ func (p ParallelFirst[Elem, TaskResult]) task(ctx context.Context, wg *sync.Wait
 	}
 }
 
-func (p ParallelFirst[Elem, TaskResult]) resultHandler(taskResultCh chan TaskResult, defaultResults ...TaskResult) []TaskResult {
-	for result := range taskResultCh {
+func (p ParallelFirst[_, TaskResult]) resulted(resultCh chan TaskResult) []TaskResult {
+	for result := range resultCh {
 		return []TaskResult{result}
 	}
-	return defaultResults
+	return nil
 }

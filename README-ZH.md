@@ -7,6 +7,20 @@
 
 Stream 是一个基于 Go 1.18+ 泛型的流式处理库, 它支持并行处理流中的数据. 并行流会将元素平均划分多个的分区, 并创建相同数量的 goroutine 执行, 并且会保证处理完成后流中元素保持原始顺序.
 
+## 安装
+
+需要安装 Go 1.18+ 版本
+
+```bash
+$ go get github.com/xyctruth/stream
+```
+
+在代码中导入它
+
+```go
+import "github.com/xyctruth/stream"
+```
+
 ## 入门
 
 ```go
@@ -75,7 +89,7 @@ NewSlice(s).Parallel(goroutines).ForEach(func(i int, v int) {
     sort.Ints(newArray(1000)) // 模拟 CPU 耗时操作
 })
 ```
-
+使用6个cpu核心进行基准测试
 ```go
 go test -run=^$ -benchtime=5s -cpu=6  -bench=^BenchmarkParallelByCPU
 
@@ -99,7 +113,7 @@ NewSlice(s).Parallel(goroutines).ForEach(func(i int, v int) {
     time.Sleep(time.Millisecond) // 模拟 IO 耗时操作
 })
 ```
-
+使用6个cpu核心进行基准测试
 ```go
 go test -run=^$ -benchtime=5s -cpu=6  -bench=^BenchmarkParallelByIO
 

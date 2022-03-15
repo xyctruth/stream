@@ -7,6 +7,20 @@
 
 Stream is a Stream library based on Go 1.18+ Generics. It supports parallel processing of data in the stream. The parallel stream will divide the elements into multiple partitions equally, and create the same number of goroutine for execute, and will ensure that the elements in the stream remain in the original order after the processing is complete.
 
+## Installation
+
+Requires Go 1.18+ version installed
+
+```bash
+$ go get github.com/xyctruth/stream
+```
+
+Import it in code
+
+```go
+import "github.com/xyctruth/stream"
+```
+
 ## Getting Started
 
 ```go
@@ -75,7 +89,7 @@ NewSlice(s).Parallel(tt.goroutines).ForEach(func(i int, v int) {
     sort.Ints(newArray(1000)) // Simulate time-consuming CPU operations
 })
 ```
-
+Benchmark with 6 cpu cores
 ```go
 go test -run=^$ -benchtime=5s -cpu=6  -bench=^BenchmarkParallelByCPU
 
@@ -99,7 +113,7 @@ NewSlice(s).Parallel(tt.goroutines).ForEach(func(i int, v int) {
     time.Sleep(time.Millisecond) // Simulate time-consuming IO operations
 })
 ```
-
+Benchmark with 6 cpu cores
 ```go
 go test -run=^$ -benchtime=5s -cpu=6  -bench=^BenchmarkParallelByIO
 

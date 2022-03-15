@@ -3,6 +3,7 @@ package stream
 import (
 	"github.com/stretchr/testify/assert"
 	"math/rand"
+	"sync/atomic"
 	"testing"
 	"time"
 )
@@ -321,27 +322,49 @@ func TestSliceForEach(t *testing.T) {
 	tests := []struct {
 		name  string
 		input []int
-		want  []int
 	}{
 		{
 			name:  "normal",
-			input: []int{1, 2, 3, 4, 5, 6},
-			want:  []int{1, 2, 3, 4, 5, 6},
+			input: newArray(100),
+		},
+		{
+			name:  "normal",
+			input: newArray(123),
+		},
+		{
+			name:  "normal",
+			input: newArray(1000),
+		},
+		{
+			name:  "normal",
+			input: newArray(1234),
+		},
+		{
+			name:  "normal",
+			input: newArray(10000),
+		},
+		{
+			name:  "normal",
+			input: newArray(12345),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := NewSlice(tt.input).ForEach(func(i int, v int) { assert.Equal(t, tt.want[i], v) }).ToSlice()
-			assert.Equal(t, tt.want, got)
+			got := NewSlice(tt.input).ForEach(func(i int, v int) { assert.Equal(t, tt.input[i], v) }).ToSlice()
+			assert.Equal(t, tt.input, got)
 
-			got = NewSliceByComparable(tt.input).ForEach(func(i int, v int) { assert.Equal(t, tt.want[i], v) }).ToSlice()
-			assert.Equal(t, tt.want, got)
+			got = NewSliceByComparable(tt.input).ForEach(func(i int, v int) { assert.Equal(t, tt.input[i], v) }).ToSlice()
+			assert.Equal(t, tt.input, got)
 
-			got = NewSliceByOrdered(tt.input).ForEach(func(i int, v int) { assert.Equal(t, tt.want[i], v) }).ToSlice()
-			assert.Equal(t, tt.want, got)
+			got = NewSliceByOrdered(tt.input).ForEach(func(i int, v int) { assert.Equal(t, tt.input[i], v) }).ToSlice()
+			assert.Equal(t, tt.input, got)
 
-			got = NewSlice(tt.input).Parallel(10).ForEach(func(i int, v int) { assert.Equal(t, tt.want[i], v) }).ToSlice()
-			assert.Equal(t, tt.want, got)
+			got = NewSlice(tt.input).Parallel(10).ForEach(func(i int, v int) { assert.Equal(t, tt.input[i], v) }).ToSlice()
+			assert.Equal(t, tt.input, got)
+
+			var count int64 = 0
+			NewSlice(tt.input).Parallel(10).ForEach(func(i int, v int) { atomic.AddInt64(&count, 1) })
+			assert.Equal(t, int64(len(tt.input)), count)
 		})
 	}
 }
