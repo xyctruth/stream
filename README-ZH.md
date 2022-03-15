@@ -1,11 +1,11 @@
-# Stream: 基于 Go 1.18+ 泛型的流库 (支持并行流)
+# Stream: 基于 Go 1.18+ 泛型的流式处理库 (支持并行流)
 
 [![Build](https://github.com/xyctruth/stream/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/xyctruth/stream/actions/workflows/build.yml)
 [![codecov](https://codecov.io/gh/xyctruth/stream/branch/main/graph/badge.svg?token=ZHMPMQP0CP)](https://codecov.io/gh/xyctruth/stream)
 
 > [English](./README.md) / [中文](./README-ZH.md)
 
-Stream 是一个基于 Go 1.18+ 泛型的流库, 它支持并行处理流中的数据. 并行流会将元素平均划分多个的分区, 并创建相同数量的 goroutine 执行, 并且会保证处理完成后流中元素保持原始顺序.
+Stream 是一个基于 Go 1.18+ 泛型的流式处理库, 它支持并行处理流中的数据. 并行流会将元素平均划分多个的分区, 并创建相同数量的 goroutine 执行, 并且会保证处理完成后流中元素保持原始顺序.
 
 ## 入门
 
@@ -18,7 +18,7 @@ s := stream.NewSliceByOrdered([]string{"d", "a", "b", "c", "a"}).
     ToSlice()
 ```
 
-## 约束
+## 类型约束
 
 `any` 接受任何类型的元素, 所以不能使用 `==` `!=` `>` `<` 比较元素, 导致你不能使用 Sort(), Find()...等函数 ,但是你可以使用 SortFunc(fn), FindFunc(fn)... 代替
 

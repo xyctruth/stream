@@ -25,6 +25,7 @@ func (stream SliceStream[Elem]) Parallel(goroutines int) SliceStream[Elem] {
 	return stream
 }
 
+// IsParallel Whether parallelism is enabled
 func (stream SliceStream[Elem]) IsParallel() bool {
 	if stream.goroutines > 1 {
 		return true
@@ -33,14 +34,13 @@ func (stream SliceStream[Elem]) IsParallel() bool {
 }
 
 // At Returns the element at the given index. Accepts negative integers, which count back from the last item.
-func (stream SliceStream[Elem]) At(index int) Elem {
+func (stream SliceStream[Elem]) At(index int) (elem Elem) {
 	l := len(stream.slice)
 	if index < 0 {
 		index = index + l
 	}
 	if l == 0 || index < 0 || index >= l {
-		var defaultVal Elem
-		return defaultVal
+		return
 	}
 	return stream.slice[index]
 }
@@ -146,10 +146,9 @@ func (stream SliceStream[Elem]) ForEach(action func(int, Elem)) SliceStream[Elem
 
 // First Returns the first element in the stream.
 // If the slice is empty or nil then Elem Type default value is returned.
-func (stream SliceStream[Elem]) First() Elem {
+func (stream SliceStream[Elem]) First() (elem Elem) {
 	if len(stream.slice) == 0 {
-		var defaultVal Elem
-		return defaultVal
+		return
 	}
 	return stream.slice[0]
 }
@@ -277,8 +276,7 @@ func (stream SliceStream[Elem]) Map(mapper func(Elem) Elem) SliceStream[Elem] {
 // MaxFunc Returns the maximum element of this stream.
 // - greater: return a > b
 // If the slice is empty or nil then Elem Type default value is returned.
-func (stream SliceStream[Elem]) MaxFunc(greater func(a, b Elem) bool) Elem {
-	var max Elem
+func (stream SliceStream[Elem]) MaxFunc(greater func(a, b Elem) bool) (max Elem) {
 	for i, v := range stream.slice {
 		if greater(v, max) || i == 0 {
 			max = v
@@ -290,8 +288,7 @@ func (stream SliceStream[Elem]) MaxFunc(greater func(a, b Elem) bool) Elem {
 // MinFunc Returns the minimum element of this stream.
 // - less: return a < b
 // If the slice is empty or nil then Elem Type default value is returned.
-func (stream SliceOrderedStream[Elem]) MinFunc(less func(a, b Elem) bool) Elem {
-	var min Elem
+func (stream SliceOrderedStream[Elem]) MinFunc(less func(a, b Elem) bool) (min Elem) {
 	for i, v := range stream.slice {
 		if less(v, min) || i == 0 {
 			min = v
@@ -301,8 +298,7 @@ func (stream SliceOrderedStream[Elem]) MinFunc(less func(a, b Elem) bool) Elem {
 }
 
 // Reduce Returns a slice consisting of the elements of this stream.
-func (stream SliceStream[Elem]) Reduce(accumulator func(Elem, Elem) Elem) Elem {
-	var result Elem
+func (stream SliceStream[Elem]) Reduce(accumulator func(Elem, Elem) Elem) (result Elem) {
 	if len(stream.slice) == 0 {
 		return result
 	}

@@ -18,7 +18,7 @@ s := stream.NewSliceByOrdered([]string{"d", "a", "b", "c", "a"}).
     ToSlice()
 ```
 
-## Constraints
+## Type Constraints
 
 `any` accepts elements of any type, so you cannot use `==` `!=` `>` `<` to compare elements, which will prevent you from using Sort(), Find()... functions, but you can use SortFunc(fn), FindFunc(fn)... instead
 
