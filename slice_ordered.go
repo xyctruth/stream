@@ -5,32 +5,32 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-type sliceOrderedStream[Elem constraints.Ordered] struct {
-	sliceComparableStream[Elem]
+type SliceOrderedStream[Elem constraints.Ordered] struct {
+	SliceComparableStream[Elem]
 }
 
 // NewSliceByOrdered new stream instance, generics constraints based on constraints.Ordered
-func NewSliceByOrdered[Elem constraints.Ordered](v []Elem) sliceOrderedStream[Elem] {
-	return sliceOrderedStream[Elem]{sliceComparableStream: NewSliceByComparable(v)}
+func NewSliceByOrdered[Elem constraints.Ordered](v []Elem) SliceOrderedStream[Elem] {
+	return SliceOrderedStream[Elem]{SliceComparableStream: NewSliceByComparable(v)}
 }
 
-// Parallel goroutines > 1 enable process, goroutines <= 1 disable process
-func (stream sliceOrderedStream[Elem]) Parallel(goroutines int) sliceOrderedStream[Elem] {
-	stream.sliceComparableStream = stream.sliceComparableStream.Parallel(goroutines)
+// Parallel goroutines > 1 enable All, goroutines <= 1 disable All
+func (stream SliceOrderedStream[Elem]) Parallel(goroutines int) SliceOrderedStream[Elem] {
+	stream.SliceComparableStream = stream.SliceComparableStream.Parallel(goroutines)
 	return stream
 }
 
 // IsSorted reports whether x is sorted in ascending order.
 // Compare according to the constraints.Ordered.
 // If the slice is empty or nil then true is returned.
-func (stream sliceOrderedStream[Elem]) IsSorted() bool {
+func (stream SliceOrderedStream[Elem]) IsSorted() bool {
 	return slices.IsSorted(stream.slice)
 }
 
 // Max Returns the maximum element of this stream.
 // Compare according to the constraints.Ordered.
 // If the slice is empty or nil then Elem Type default value is returned.
-func (stream sliceOrderedStream[Elem]) Max() Elem {
+func (stream SliceOrderedStream[Elem]) Max() Elem {
 	var max Elem
 	for i, v := range stream.slice {
 		if v > max || i == 0 {
@@ -43,7 +43,7 @@ func (stream sliceOrderedStream[Elem]) Max() Elem {
 // Min Returns the minimum element of this stream.
 // Compare according to the constraints.Ordered.
 // If the slice is empty or nil then Elem Type default value is returned.
-func (stream sliceOrderedStream[Elem]) Min() Elem {
+func (stream SliceOrderedStream[Elem]) Min() Elem {
 	var min Elem
 	for i, v := range stream.slice {
 		if v < min || i == 0 {
@@ -55,52 +55,52 @@ func (stream sliceOrderedStream[Elem]) Min() Elem {
 
 // Sort Returns a sorted stream consisting of the elements of this stream.
 // Sorted according to slices.Sort.
-func (stream sliceOrderedStream[Elem]) Sort() sliceOrderedStream[Elem] {
+func (stream SliceOrderedStream[Elem]) Sort() SliceOrderedStream[Elem] {
 	slices.Sort(stream.slice)
 	return stream
 }
 
 // Distinct Returns a stream consisting of the distinct elements of this stream.
 // Remove duplicate according to map comparable.
-func (stream sliceOrderedStream[Elem]) Distinct() sliceOrderedStream[Elem] {
-	stream.sliceComparableStream = stream.sliceComparableStream.Distinct()
+func (stream SliceOrderedStream[Elem]) Distinct() SliceOrderedStream[Elem] {
+	stream.SliceComparableStream = stream.SliceComparableStream.Distinct()
 	return stream
 }
 
 // ForEach Performs an action for each element of this stream.
-func (stream sliceOrderedStream[Elem]) ForEach(action func(int, Elem)) sliceOrderedStream[Elem] {
-	stream.sliceComparableStream = stream.sliceComparableStream.ForEach(action)
+func (stream SliceOrderedStream[Elem]) ForEach(action func(int, Elem)) SliceOrderedStream[Elem] {
+	stream.SliceComparableStream = stream.SliceComparableStream.ForEach(action)
 	return stream
 }
 
 // Filter Returns a stream consisting of the elements of this stream that match the given predicate.
-func (stream sliceOrderedStream[Elem]) Filter(predicate func(Elem) bool) sliceOrderedStream[Elem] {
-	stream.sliceComparableStream = stream.sliceComparableStream.Filter(predicate)
+func (stream SliceOrderedStream[Elem]) Filter(predicate func(Elem) bool) SliceOrderedStream[Elem] {
+	stream.SliceComparableStream = stream.SliceComparableStream.Filter(predicate)
 	return stream
 }
 
 // Limit Returns a stream consisting of the elements of this stream, truncated to be no longer than maxSize in length.
-func (stream sliceOrderedStream[Elem]) Limit(maxSize int) sliceOrderedStream[Elem] {
-	stream.sliceComparableStream = stream.sliceComparableStream.Limit(maxSize)
+func (stream SliceOrderedStream[Elem]) Limit(maxSize int) SliceOrderedStream[Elem] {
+	stream.SliceComparableStream = stream.SliceComparableStream.Limit(maxSize)
 	return stream
 }
 
 // Map Returns a stream consisting of the results of applying the given function to the elements of this stream.
-func (stream sliceOrderedStream[Elem]) Map(mapper func(Elem) Elem) sliceOrderedStream[Elem] {
-	stream.sliceComparableStream = stream.sliceComparableStream.Map(mapper)
+func (stream SliceOrderedStream[Elem]) Map(mapper func(Elem) Elem) SliceOrderedStream[Elem] {
+	stream.SliceComparableStream = stream.SliceComparableStream.Map(mapper)
 	return stream
 }
 
 // SortFunc Returns a sorted stream consisting of the elements of this stream.
 // Sorted according to slices.SortFunc.
-func (stream sliceOrderedStream[Elem]) SortFunc(less func(a, b Elem) bool) sliceOrderedStream[Elem] {
-	stream.sliceComparableStream = stream.sliceComparableStream.SortFunc(less)
+func (stream SliceOrderedStream[Elem]) SortFunc(less func(a, b Elem) bool) SliceOrderedStream[Elem] {
+	stream.SliceComparableStream = stream.SliceComparableStream.SortFunc(less)
 	return stream
 }
 
 // SortStableFunc Returns a sorted stream consisting of the elements of this stream.
 // Sorted according to slices.SortStableFunc.
-func (stream sliceOrderedStream[Elem]) SortStableFunc(less func(a, b Elem) bool) sliceOrderedStream[Elem] {
-	stream.sliceComparableStream = stream.sliceComparableStream.SortStableFunc(less)
+func (stream SliceOrderedStream[Elem]) SortStableFunc(less func(a, b Elem) bool) SliceOrderedStream[Elem] {
+	stream.SliceComparableStream = stream.SliceComparableStream.SortStableFunc(less)
 	return stream
 }
