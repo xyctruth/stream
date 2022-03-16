@@ -69,38 +69,38 @@ func (stream SliceOrderedStream[Elem]) Distinct() SliceOrderedStream[Elem] {
 
 // ForEach Performs an action for each element of this stream.
 func (stream SliceOrderedStream[Elem]) ForEach(action func(int, Elem)) SliceOrderedStream[Elem] {
-	stream.SliceComparableStream = stream.SliceComparableStream.ForEach(action)
+	stream.SliceStream = stream.SliceStream.ForEach(action)
 	return stream
 }
 
 // Filter Returns a stream consisting of the elements of this stream that match the given predicate.
 func (stream SliceOrderedStream[Elem]) Filter(predicate func(Elem) bool) SliceOrderedStream[Elem] {
-	stream.SliceComparableStream = stream.SliceComparableStream.Filter(predicate)
+	stream.SliceStream = stream.SliceStream.Filter(predicate)
 	return stream
 }
 
 // Limit Returns a stream consisting of the elements of this stream, truncated to be no longer than maxSize in length.
 func (stream SliceOrderedStream[Elem]) Limit(maxSize int) SliceOrderedStream[Elem] {
-	stream.SliceComparableStream = stream.SliceComparableStream.Limit(maxSize)
+	stream.SliceStream = stream.SliceStream.Limit(maxSize)
 	return stream
 }
 
 // Map Returns a stream consisting of the results of applying the given function to the elements of this stream.
 func (stream SliceOrderedStream[Elem]) Map(mapper func(Elem) Elem) SliceOrderedStream[Elem] {
-	stream.SliceComparableStream = stream.SliceComparableStream.Map(mapper)
+	stream.SliceStream = stream.SliceStream.Map(mapper)
 	return stream
 }
 
 // SortFunc Returns a sorted stream consisting of the elements of this stream.
 // Sorted according to slices.SortFunc.
 func (stream SliceOrderedStream[Elem]) SortFunc(less func(a, b Elem) bool) SliceOrderedStream[Elem] {
-	stream.SliceComparableStream = stream.SliceComparableStream.SortFunc(less)
+	stream.SliceStream = stream.SliceStream.SortFunc(less)
 	return stream
 }
 
 // SortStableFunc Returns a sorted stream consisting of the elements of this stream.
 // Sorted according to slices.SortStableFunc.
 func (stream SliceOrderedStream[Elem]) SortStableFunc(less func(a, b Elem) bool) SliceOrderedStream[Elem] {
-	stream.SliceComparableStream = stream.SliceComparableStream.SortStableFunc(less)
+	stream.SliceStream = stream.SliceStream.SortStableFunc(less)
 	return stream
 }

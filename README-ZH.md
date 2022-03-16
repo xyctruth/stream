@@ -24,12 +24,19 @@ import "github.com/xyctruth/stream"
 ## 入门
 
 ```go
+// constraints.Ordered
 s := stream.NewSliceByOrdered([]string{"d", "a", "b", "c", "a"}).
     Filter(func(s string) bool { return s != "b" }).
     Map(func(s string) string { return "class_" + s }).
     Sort().
     Distinct().
     ToSlice()
+
+// 需要转换切片元素的类型
+s := stream.NewSliceByMapping[int, string, string]([]int{1, 2, 3, 4, 5}).
+    Filter(func(v int) bool { return v >3 }).
+    Map(func(v int) string { return "mapping_" + strconv.Itoa(v) }).
+    Reduce(func(r string, v string) string { return r + v })
 ```
 
 ## 类型约束
@@ -63,6 +70,22 @@ type SliceOrderedStream[Elem constraints.Ordered] struct {
 }
 
 stream.NewSliceByOrdered([]int{1, 2, 3, 7, 1})
+```
+
+## 类型转换
+
+有些时候我们需要使用 `Map` ,`Reduce` 转换切片元素的类型,但是很遗憾目前 Golang 并不支持结构体的方法有额外的类型参数,所有类型参数必须在结构体中声明。在 Golang 支持之前我们暂时使用临时方案解决这个问题。
+
+```go
+type SliceMappingStream[Elem any, MapElem any, ReduceElem any] struct {
+    SliceStream[Elem]
+}
+
+s := stream.NewSliceByMapping[int, string, string]([]int{1, 2, 3, 4, 5}).
+    Filter(func(v int) bool { return v >3 }).
+    Map(func(v int) string { return "mapping_" + strconv.Itoa(v) }).
+    Reduce(func(r string, v string) string { return r + v })
+
 ```
 
 ## 并行
