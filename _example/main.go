@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/xyctruth/stream"
+	"strconv"
 )
 
 func main() {
@@ -49,5 +50,13 @@ func main() {
 			},
 		).ToSlice()
 	fmt.Println(s4)
+
+	// convert to the type of non-primitive slice elements.
+	s5 := stream.NewSliceByMapping[int, string, string]([]int{1, 2, 3, 4, 5}).
+		Filter(func(v int) bool { return v > 3 }).
+		Map(func(v int) string { return "mapping_" + strconv.Itoa(v) }).
+		Reduce(func(r string, v string) string { return r + v })
+
+	fmt.Println(s5)
 
 }

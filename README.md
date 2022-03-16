@@ -30,6 +30,12 @@ s := stream.NewSliceByOrdered([]string{"d", "a", "b", "c", "a"}).
     Sort().
     Distinct().
     ToSlice()
+
+// Need to convert the type of slice elements
+s := stream.NewSliceByMapping[int, string, string]([]int{1, 2, 3, 4, 5}).
+    Filter(func(v int) bool { return v >3 }).
+    Map(func(v int) string { return "mapping_" + strconv.Itoa(v) }).
+    Reduce(func(r string, v string) string { return r + v })
 ```
 
 ## Type Constraints
@@ -62,6 +68,22 @@ type SliceOrderedStream[Elem constraints.Ordered] struct {
 }
 
 stream.NewSliceByOrdered([]int{1, 2, 3, 7, 1})
+```
+
+## Type Conversion
+
+Sometimes we need to use `Map` , `Reduce` to convert the type of slice elements, but unfortunately Golang currently does not support structure methods with additional type parameters, all type parameters must be declared in the structure. We work around this with a temporary workaround until Golang supports it.
+
+```go
+type SliceMappingStream[Elem any, MapElem any, ReduceElem any] struct {
+    SliceStream[Elem]
+}
+
+s := stream.NewSliceByMapping[int, string, string]([]int{1, 2, 3, 4, 5}).
+    Filter(func(v int) bool { return v >3 }).
+    Map(func(v int) string { return "mapping_" + strconv.Itoa(v) }).
+    Reduce(func(r string, v string) string { return r + v })
+
 ```
 
 ## Parallel
