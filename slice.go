@@ -239,8 +239,9 @@ func (stream SliceStream[Elem]) Delete(i, j int) SliceStream[Elem] {
 	return stream
 }
 
-// IsSortedFunc reports whether x is sorted in ascending order.
-// Compare according to the constraints.Ordered.
+// IsSortedFunc Returns whether stream is sorted in ascending order.
+// Compare according to the less function
+// - less: return a > b
 // If the slice is empty or nil then true is returned.
 func (stream SliceStream[Elem]) IsSortedFunc(less func(a, b Elem) bool) bool {
 	return slices.IsSortedFunc(stream.slice, less)
@@ -286,11 +287,11 @@ func (stream SliceStream[Elem]) Map(mapper func(Elem) Elem) SliceStream[Elem] {
 }
 
 // MaxFunc Returns the maximum element of this stream.
-// - greater: return a > b
+// - less: return a > b
 // If the slice is empty or nil then Elem Type default value is returned.
-func (stream SliceStream[Elem]) MaxFunc(greater func(a, b Elem) bool) (max Elem) {
+func (stream SliceStream[Elem]) MaxFunc(less func(a, b Elem) bool) (max Elem) {
 	for i, v := range stream.slice {
-		if greater(v, max) || i == 0 {
+		if less(v, max) || i == 0 {
 			max = v
 		}
 	}
@@ -335,7 +336,7 @@ func (stream SliceStream[Elem]) SortStableFunc(less func(a, b Elem) bool) SliceS
 	return stream
 }
 
-// ToSlice Returns a slice consisting of the elements of this stream.
+// ToSlice Returns a slice in the stream
 func (stream SliceStream[Elem]) ToSlice() []Elem {
 	return stream.slice
 }

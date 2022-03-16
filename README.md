@@ -37,18 +37,30 @@ s := stream.NewSliceByOrdered([]string{"d", "a", "b", "c", "a"}).
 `any` accepts elements of any type, so you cannot use `==` `!=` `>` `<` to compare elements, which will prevent you from using Sort(), Find()... functions, but you can use SortFunc(fn), FindFunc(fn)... instead
 
 ```go
+type SliceStream[Elem any] struct {
+    slice      []Elem
+}
+
 stream.NewSlice([]int{1, 2, 3, 7, 1})
 ```
 
 `comparable` accepts type can use `==` `!=` to compare elements, but still can't use `>` `<` to compare elements, so you can't use Sort(), Min()... functions, but you can use SortFunc(fn), MinFunc()... instead
 
 ```go
+type SliceComparableStream[Elem comparable] struct {
+    SliceStream[Elem]
+}
+
 stream.NewSliceByComparable([]int{1, 2, 3, 7, 1})
 ```
 
 `constraints.Ordered` accepts types that can use `==` `!=` `>` `<`  to compare elements, so can use all functions
 
 ```go
+type SliceOrderedStream[Elem constraints.Ordered] struct {
+    SliceComparableStream[Elem]
+}
+
 stream.NewSliceByOrdered([]int{1, 2, 3, 7, 1})
 ```
 
@@ -76,7 +88,13 @@ s := stream.NewSliceByOrdered([]string{"d", "a", "b", "c", "a"}).
     ).ToSlice()
 ```
 
-### Parallel goroutines
+### Parallel Type
+
+- `First`: parallel processing ends as soon as the first return value is obtained. `For: AllMatch, AnyMatch, FindFunc`
+- `ALL`: All elements need to be processed in parallel, all return values are obtained, and then the parallel is ended. `For: Map, Filter`
+- `Action`: All elements need to be processed in parallel, no return value required. `For: ForEach, Action`
+
+### Parallel Goroutines Number
 
 The number of parallel goroutines has different choices for CPU operations and IO operations. Generally, the number of goroutines does not need to be set larger than the number of CPU cores for CPU operations, while the number of goroutines for IO operations can be set to be much larger than the number of CPU cores.
 

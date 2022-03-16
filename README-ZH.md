@@ -37,18 +37,31 @@ s := stream.NewSliceByOrdered([]string{"d", "a", "b", "c", "a"}).
 `any` 接受任何类型的元素, 所以不能使用 `==` `!=` `>` `<` 比较元素, 导致你不能使用 Sort(), Find()...等函数 ,但是你可以使用 SortFunc(fn), FindFunc(fn)... 代替
 
 ```go
+type SliceStream[Elem any] struct {
+    slice      []Elem
+}
+
 stream.NewSlice([]int{1, 2, 3, 7, 1})
 ```
 
 `comparable` 接收的类型可以使用 `==` `!=` 比较元素, 但仍然不能使用 `>` `<` 比较元素, 因此你不能使用 Sort(), Min()...等函数 ,但是你可以使用 SortFunc(fn), MinFunc()... 代替
 
 ```go
+type SliceComparableStream[Elem comparable] struct {
+    SliceStream[Elem]
+}
+
+
 stream.NewSliceByComparable([]int{1, 2, 3, 7, 1})
 ```
 
 `constraints.Ordered` 接收的类型可以使用 `==` `!=` `>` `<`, 所以可以使用所有的函数
 
 ```go
+type SliceOrderedStream[Elem constraints.Ordered] struct {
+    SliceComparableStream[Elem]
+}
+
 stream.NewSliceByOrdered([]int{1, 2, 3, 7, 1})
 ```
 
@@ -76,7 +89,13 @@ s := stream.NewSliceByOrdered([]string{"d", "a", "b", "c", "a"}).
     ).ToSlice()
 ```
 
-### 并行 goroutines
+### 并行类型
+
+- `First`: 一旦获得第一个返回值，并行处理就结束. `For: AllMatch, AnyMatch, FindFunc`
+- `ALL`: 所有元素都需要并行处理，得到所有返回值，然后并行结束. `For: Map, Filter`
+- `Action`: 所有元素需要并行处理，不需要返回值. `For: ForEach, Action`
+
+### 并行 Goroutines 数量
 
 开启并行 goroutine 数量在面对 CPU 操作与 IO 操作有着不同的选择。 一般面对 CPU 操作时 goroutine 数量不需要设置大于 CPU 核心数，而 IO 操作时 goroutine 数量可以设置远远大于 CPU 核心数.
 
