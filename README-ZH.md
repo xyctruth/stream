@@ -77,6 +77,10 @@ stream.NewSliceByOrdered([]int{1, 2, 3, 7, 1})
 有些时候我们需要使用 `Map` ,`Reduce` 转换切片元素的类型,但是很遗憾目前 Golang 并不支持结构体的方法有额外的类型参数,所有类型参数必须在结构体中声明。在 Golang 支持之前我们暂时使用临时方案解决这个问题。
 
 ```go
+// SliceMappingStream  Need to convert the type of slice elements.
+// - E elements type
+// - MapE map elements type
+// - ReduceE reduce elements type
 type SliceMappingStream[E any, MapE any, ReduceE any] struct {
     SliceStream[E]
 }

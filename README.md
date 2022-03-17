@@ -75,6 +75,10 @@ stream.NewSliceByOrdered([]int{1, 2, 3, 7, 1})
 Sometimes we need to use `Map` , `Reduce` to convert the type of slice elements, but unfortunately Golang currently does not support structure methods with additional type parameters, all type parameters must be declared in the structure. We work around this with a temporary workaround until Golang supports it.
 
 ```go
+// SliceMappingStream  Need to convert the type of slice elements.
+// - E elements type
+// - MapE map elements type
+// - ReduceE reduce elements type
 type SliceMappingStream[E any, MapE any, ReduceE any] struct {
     SliceStream[E]
 }
