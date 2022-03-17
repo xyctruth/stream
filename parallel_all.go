@@ -2,21 +2,24 @@ package stream
 
 // ParallelAll All elements need to be processed in parallel, all return values are obtained, and then the parallel is ended.
 //
+// - E elements type
+// - R result type
+//
 // For SliceStream.Map, SliceStream.Filter.
-type ParallelAll[Elem any, Result any] struct {
-	slice   []Elem                        // element to be processed
-	handler ParallelHandler[Elem, Result] // handler function
+type ParallelAll[E any, R any] struct {
+	slice   []E                   // element to be processed
+	handler ParallelHandler[E, R] // handler function
 }
 
-func (p ParallelAll[Elem, Result]) Process(goroutines int, slice []Elem, handler ParallelHandler[Elem, Result]) []Result {
+func (p ParallelAll[E, R]) Process(goroutines int, slice []E, handler ParallelHandler[E, R]) []R {
 	p.slice = slice
 	p.handler = handler
 
 	partitions := partition(p.slice, goroutines)
-	resultChs := make([]chan []Result, len(partitions))
+	resultChs := make([]chan []R, len(partitions))
 
 	for i, pa := range partitions {
-		resultChs[i] = make(chan []Result)
+		resultChs[i] = make(chan []R)
 		go p.do(resultChs[i], pa)
 	}
 
@@ -24,9 +27,9 @@ func (p ParallelAll[Elem, Result]) Process(goroutines int, slice []Elem, handler
 	return result
 }
 
-func (p ParallelAll[_, Result]) do(resultCh chan []Result, pa part) {
+func (p ParallelAll[_, R]) do(resultCh chan []R, pa part) {
 	defer close(resultCh)
-	ret := make([]Result, 0, pa.high-pa.low)
+	ret := make([]R, 0, pa.high-pa.low)
 
 	for i := pa.low; i < pa.high; i++ {
 		isReturn, r := p.handler(i, p.slice[i])
@@ -41,8 +44,8 @@ func (p ParallelAll[_, Result]) do(resultCh chan []Result, pa part) {
 	return
 }
 
-func (p ParallelAll[_, Result]) resulted(resultChs []chan []Result) []Result {
-	results := make([]Result, 0, len(p.slice))
+func (p ParallelAll[_, R]) resulted(resultChs []chan []R) []R {
+	results := make([]R, 0, len(p.slice))
 	for _, resultCh := range resultChs {
 		for result := range resultCh {
 			for _, r := range result {

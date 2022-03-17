@@ -1,20 +1,29 @@
 package stream
 
-type ParallelHandler[Elem any, TaskResult any] func(index int, elem Elem) (isReturn bool, taskResult TaskResult)
+// ParallelHandler Parallel processing Handler
+//
+// - E elements type
+// - R result type
+type ParallelHandler[E any, R any] func(index int, elem E) (isReturn bool, result R)
 
 // Parallel Provides parallel processing capabilities.
 //
+// - E elements type
+// - R result type
+//
 // ParallelFirst parallel processing ends as soon as the first return value is obtained.
+//
 // ParallelAll All elements need to be processed in parallel, all return values are obtained, and then the parallel is ended.
+//
 // ParallelAction All elements need to be processed in parallel, no return value required
-type Parallel[Elem any, Result any] interface {
-	Process(goroutines int, slice []Elem, handler ParallelHandler[Elem, Result]) []Result
+type Parallel[E any, R any] interface {
+	Process(goroutines int, slice []E, handler ParallelHandler[E, R]) []R
 }
 
-func ParallelProcess[T Parallel[Elem, Result], Elem any, Result any](
+func ParallelProcess[T Parallel[E, R], E any, R any](
 	goroutines int,
-	slice []Elem,
-	handler ParallelHandler[Elem, Result]) []Result {
+	slice []E,
+	handler ParallelHandler[E, R]) []R {
 	var p T
 	return p.Process(goroutines, slice, handler)
 }
@@ -27,7 +36,7 @@ type part struct {
 }
 
 // partition Given a specified slice, evenly part according to the slice.
-func partition[Elem any](slice []Elem, goroutines int) []part {
+func partition[E any](slice []E, goroutines int) []part {
 	l := len(slice)
 	if l == 0 {
 		return nil

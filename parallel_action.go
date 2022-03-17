@@ -4,11 +4,14 @@ import "sync"
 
 // ParallelAction All elements need to be processed in parallel, no return value required
 //
+// - E elements type
+// - R result type
+//
 // For  SliceStream.ForEach
-type ParallelAction[Elem any, Result any] struct {
+type ParallelAction[E any, R any] struct {
 }
 
-func (p ParallelAction[Elem, Result]) Process(goroutines int, slice []Elem, handler ParallelHandler[Elem, Result]) []Result {
+func (p ParallelAction[E, R]) Process(goroutines int, slice []E, handler ParallelHandler[E, R]) []R {
 	wg := sync.WaitGroup{}
 	partitions := partition(slice, goroutines)
 	wg.Add(len(partitions))

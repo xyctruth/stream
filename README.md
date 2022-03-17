@@ -43,8 +43,8 @@ s := stream.NewSliceByMapping[int, string, string]([]int{1, 2, 3, 4, 5}).
 `any` accepts elements of any type, so you cannot use `==` `!=` `>` `<` to compare elements, which will prevent you from using Sort(), Find()... functions, but you can use SortFunc(fn), FindFunc(fn)... instead
 
 ```go
-type SliceStream[Elem any] struct {
-    slice      []Elem
+type SliceStream[E any] struct {
+    slice      []E
 }
 
 stream.NewSlice([]int{1, 2, 3, 7, 1})
@@ -53,8 +53,8 @@ stream.NewSlice([]int{1, 2, 3, 7, 1})
 `comparable` accepts type can use `==` `!=` to compare elements, but still can't use `>` `<` to compare elements, so you can't use Sort(), Min()... functions, but you can use SortFunc(fn), MinFunc()... instead
 
 ```go
-type SliceComparableStream[Elem comparable] struct {
-    SliceStream[Elem]
+type SliceComparableStream[E comparable] struct {
+    SliceStream[E]
 }
 
 stream.NewSliceByComparable([]int{1, 2, 3, 7, 1})
@@ -63,8 +63,8 @@ stream.NewSliceByComparable([]int{1, 2, 3, 7, 1})
 `constraints.Ordered` accepts types that can use `==` `!=` `>` `<`  to compare elements, so can use all functions
 
 ```go
-type SliceOrderedStream[Elem constraints.Ordered] struct {
-    SliceComparableStream[Elem]
+type SliceOrderedStream[E constraints.Ordered] struct {
+    SliceComparableStream[E]
 }
 
 stream.NewSliceByOrdered([]int{1, 2, 3, 7, 1})
@@ -75,8 +75,8 @@ stream.NewSliceByOrdered([]int{1, 2, 3, 7, 1})
 Sometimes we need to use `Map` , `Reduce` to convert the type of slice elements, but unfortunately Golang currently does not support structure methods with additional type parameters, all type parameters must be declared in the structure. We work around this with a temporary workaround until Golang supports it.
 
 ```go
-type SliceMappingStream[Elem any, MapElem any, ReduceElem any] struct {
-    SliceStream[Elem]
+type SliceMappingStream[E any, MapE any, ReduceE any] struct {
+    SliceStream[E]
 }
 
 s := stream.NewSliceByMapping[int, string, string]([]int{1, 2, 3, 4, 5}).

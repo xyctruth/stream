@@ -44,8 +44,8 @@ s := stream.NewSliceByMapping[int, string, string]([]int{1, 2, 3, 4, 5}).
 `any` 接受任何类型的元素, 所以不能使用 `==` `!=` `>` `<` 比较元素, 导致你不能使用 Sort(), Find()...等函数 ,但是你可以使用 SortFunc(fn), FindFunc(fn)... 代替
 
 ```go
-type SliceStream[Elem any] struct {
-    slice      []Elem
+type SliceStream[E any] struct {
+    slice      []E
 }
 
 stream.NewSlice([]int{1, 2, 3, 7, 1})
@@ -54,8 +54,8 @@ stream.NewSlice([]int{1, 2, 3, 7, 1})
 `comparable` 接收的类型可以使用 `==` `!=` 比较元素, 但仍然不能使用 `>` `<` 比较元素, 因此你不能使用 Sort(), Min()...等函数 ,但是你可以使用 SortFunc(fn), MinFunc()... 代替
 
 ```go
-type SliceComparableStream[Elem comparable] struct {
-    SliceStream[Elem]
+type SliceComparableStream[E comparable] struct {
+    SliceStream[E]
 }
 
 
@@ -65,8 +65,8 @@ stream.NewSliceByComparable([]int{1, 2, 3, 7, 1})
 `constraints.Ordered` 接收的类型可以使用 `==` `!=` `>` `<`, 所以可以使用所有的函数
 
 ```go
-type SliceOrderedStream[Elem constraints.Ordered] struct {
-    SliceComparableStream[Elem]
+type SliceOrderedStream[E constraints.Ordered] struct {
+    SliceComparableStream[E]
 }
 
 stream.NewSliceByOrdered([]int{1, 2, 3, 7, 1})
@@ -77,8 +77,8 @@ stream.NewSliceByOrdered([]int{1, 2, 3, 7, 1})
 有些时候我们需要使用 `Map` ,`Reduce` 转换切片元素的类型,但是很遗憾目前 Golang 并不支持结构体的方法有额外的类型参数,所有类型参数必须在结构体中声明。在 Golang 支持之前我们暂时使用临时方案解决这个问题。
 
 ```go
-type SliceMappingStream[Elem any, MapElem any, ReduceElem any] struct {
-    SliceStream[Elem]
+type SliceMappingStream[E any, MapE any, ReduceE any] struct {
+    SliceStream[E]
 }
 
 s := stream.NewSliceByMapping[int, string, string]([]int{1, 2, 3, 4, 5}).

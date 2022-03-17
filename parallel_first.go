@@ -7,13 +7,16 @@ import (
 
 // ParallelFirst parallel processing ends as soon as the first return value is obtained.
 //
+// - E elements type
+// - R result type
+//
 // For SliceStream.AllMatch, SliceStream.AnyMatch, SliceStream.FindFunc.
-type ParallelFirst[Elem any, Result any] struct {
-	slice   []Elem                        // element to be processed
-	handler ParallelHandler[Elem, Result] // handler function
+type ParallelFirst[E any, R any] struct {
+	slice   []E                   // element to be processed
+	handler ParallelHandler[E, R] // handler function
 }
 
-func (p ParallelFirst[Elem, Result]) Process(goroutines int, slice []Elem, handler ParallelHandler[Elem, Result]) []Result {
+func (p ParallelFirst[E, R]) Process(goroutines int, slice []E, handler ParallelHandler[E, R]) []R {
 	p.slice = slice
 	p.handler = handler
 
@@ -22,7 +25,7 @@ func (p ParallelFirst[Elem, Result]) Process(goroutines int, slice []Elem, handl
 	defer cancel()
 
 	partitions := partition(p.slice, goroutines)
-	resultCh := make(chan Result, len(partitions))
+	resultCh := make(chan R, len(partitions))
 	wg.Add(len(partitions))
 
 	for _, pa := range partitions {
@@ -38,7 +41,7 @@ func (p ParallelFirst[Elem, Result]) Process(goroutines int, slice []Elem, handl
 	return result
 }
 
-func (p ParallelFirst[_, Result]) do(ctx context.Context, wg *sync.WaitGroup, taskResultCh chan Result, pa part) {
+func (p ParallelFirst[_, R]) do(ctx context.Context, wg *sync.WaitGroup, resultCh chan R, pa part) {
 	defer wg.Done()
 	for i := pa.low; i < pa.high; i++ {
 		select {
@@ -48,16 +51,16 @@ func (p ParallelFirst[_, Result]) do(ctx context.Context, wg *sync.WaitGroup, ta
 			isReturn, r := p.handler(i+pa.low, p.slice[i])
 			// Get the first matching value, end the parallel
 			if isReturn {
-				taskResultCh <- r
+				resultCh <- r
 				return
 			}
 		}
 	}
 }
 
-func (p ParallelFirst[_, TaskResult]) resulted(resultCh chan TaskResult) []TaskResult {
+func (p ParallelFirst[_, R]) resulted(resultCh chan R) []R {
 	for result := range resultCh {
-		return []TaskResult{result}
+		return []R{result}
 	}
 	return nil
 }
