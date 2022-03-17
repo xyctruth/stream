@@ -51,7 +51,7 @@ func main() {
 		).ToSlice()
 	fmt.Println(s4)
 
-	// convert to the type of non-primitive slice elements.
+	// Need to convert the type of slice elements.
 	s5 := stream.NewSliceByMapping[int, string, string]([]int{1, 2, 3, 4, 5}).
 		Filter(func(v int) bool { return v > 3 }).
 		Map(func(v int) string { return "mapping_" + strconv.Itoa(v) }).

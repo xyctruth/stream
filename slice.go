@@ -4,6 +4,7 @@ import (
 	"golang.org/x/exp/slices"
 )
 
+// SliceStream Generics constraints based on any
 type SliceStream[E any] struct {
 	slice      []E
 	goroutines int

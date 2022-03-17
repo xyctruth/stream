@@ -12,12 +12,12 @@ func TestSliceComparableDistinct(t *testing.T) {
 		want  []int
 	}{
 		{
-			name:  "has distinct",
+			name:  "case",
 			input: []int{1, 2, 1},
 			want:  []int{1, 2},
 		},
 		{
-			name:  "no distinct",
+			name:  "case",
 			input: []int{1, 2, 3},
 			want:  []int{1, 2, 3},
 		},
@@ -51,13 +51,13 @@ func TestSliceComparableEqual(t *testing.T) {
 		want   bool
 	}{
 		{
-			name:   "normal",
+			name:   "case",
 			input:  []int{1, 2},
 			input2: []int{1, 2},
 			want:   true,
 		},
 		{
-			name:   "normal",
+			name:   "case",
 			input:  []int{1, 2},
 			input2: []int{1, 2},
 			want:   true,
@@ -100,19 +100,19 @@ func TestSliceComparableFind(t *testing.T) {
 		want  int
 	}{
 		{
-			name:  "normal",
+			name:  "case",
 			input: []int{1, 2, 1, 2, 1},
 			dest:  1,
 			want:  0,
 		},
 		{
-			name:  "normal",
+			name:  "case",
 			input: []int{1, 2, 1, 2, 1},
 			dest:  2,
 			want:  1,
 		},
 		{
-			name:  "normal",
+			name:  "case",
 			input: []int{1, 2},
 			dest:  3,
 			want:  -1,

@@ -17,6 +17,15 @@ func newArray(count int) []int {
 	return s
 }
 
+func newArrayN(count int, n int) []int {
+	r := rand.New(rand.NewSource(time.Now().Unix()))
+	s := make([]int, count)
+	for i := 0; i < count; i++ {
+		s[i] = r.Intn(n)
+	}
+	return s
+}
+
 func TestNewSliceStream(t *testing.T) {
 	tests := []struct {
 		name  string
@@ -24,9 +33,14 @@ func TestNewSliceStream(t *testing.T) {
 		want  []string
 	}{
 		{
-			name:  "normal",
+			name:  "case",
 			input: []string{"a", "b"},
 			want:  []string{"a", "b"},
+		},
+		{
+			name:  "empty",
+			input: []string{},
+			want:  []string{},
 		},
 		{
 			name:  "nil",
@@ -61,25 +75,25 @@ func TestSliceAt(t *testing.T) {
 		want  int
 	}{
 		{
-			name:  "normal",
+			name:  "case",
 			input: []int{1, 2, 3},
 			index: 1,
 			want:  2,
 		},
 		{
-			name:  "normal2",
+			name:  "case",
 			input: []int{1, 2, 3},
 			index: -1,
 			want:  3,
 		},
 		{
-			name:  "normal3",
+			name:  "case",
 			input: []int{1, 2, 3},
 			index: 5,
 			want:  0,
 		},
 		{
-			name:  "normal4",
+			name:  "case",
 			input: []int{1, 2, 3},
 			index: -4,
 			want:  0,
@@ -112,16 +126,28 @@ func TestSliceAllMatch(t *testing.T) {
 		want      bool
 	}{
 		{
-			name:      "all match",
+			name:      "case",
 			input:     []int{1, 2},
 			predicate: func(v int) bool { return v < 3 },
 			want:      true,
 		},
 		{
-			name:      "no match",
+			name:      "case",
 			input:     []int{1, 2},
 			predicate: func(v int) bool { return v > 3 },
 			want:      false,
+		},
+		{
+			name:      "case",
+			input:     newArrayN(100, 200),
+			predicate: func(v int) bool { return v > 100 },
+			want:      false,
+		},
+		{
+			name:      "case",
+			input:     newArrayN(100, 200),
+			predicate: func(v int) bool { return v < 200 },
+			want:      true,
 		},
 		{
 			name:      "empty",
@@ -155,16 +181,22 @@ func TestSliceAnyMatch(t *testing.T) {
 		want      bool
 	}{
 		{
-			name:      "match",
+			name:      "case",
 			input:     []int{1, 2},
 			predicate: func(v int) bool { return v == 1 },
 			want:      true,
 		},
 		{
-			name:      "no match",
+			name:      "case",
 			input:     []int{1, 2},
 			predicate: func(v int) bool { return v == 3 },
 			want:      false,
+		},
+		{
+			name:      "case",
+			input:     append([]int{300}, newArrayN(100, 200)...),
+			predicate: func(v int) bool { time.Sleep(time.Millisecond); return v == 300 },
+			want:      true,
 		},
 		{
 			name:      "empty",
@@ -249,7 +281,7 @@ func TestSliceCount(t *testing.T) {
 		want  int
 	}{
 		{
-			name:  "normal",
+			name:  "case",
 			input: []int{1, 2},
 			want:  2,
 		},
@@ -280,13 +312,13 @@ func TestSliceEqualFunc(t *testing.T) {
 		want   bool
 	}{
 		{
-			name:   "normal",
+			name:   "case",
 			input:  []int{1, 2},
 			input2: []int{1, 2},
 			want:   true,
 		},
 		{
-			name:   "normal",
+			name:   "case",
 			input:  []int{1, 2},
 			input2: []int{1, 2},
 			want:   true,
@@ -324,28 +356,36 @@ func TestSliceForEach(t *testing.T) {
 		input []int
 	}{
 		{
-			name:  "normal",
+			name:  "case",
 			input: newArray(100),
 		},
 		{
-			name:  "normal",
+			name:  "case",
 			input: newArray(123),
 		},
 		{
-			name:  "normal",
+			name:  "case",
 			input: newArray(1000),
 		},
 		{
-			name:  "normal",
+			name:  "case",
 			input: newArray(1234),
 		},
 		{
-			name:  "normal",
+			name:  "case",
 			input: newArray(10000),
 		},
 		{
-			name:  "normal",
+			name:  "case",
 			input: newArray(12345),
+		},
+		{
+			name:  "nil",
+			input: nil,
+		},
+		{
+			name:  "empty",
+			input: []int{},
 		},
 	}
 	for _, tt := range tests {
@@ -357,6 +397,9 @@ func TestSliceForEach(t *testing.T) {
 			assert.Equal(t, tt.input, got)
 
 			got = NewSliceByOrdered(tt.input).ForEach(func(i int, v int) { assert.Equal(t, tt.input[i], v) }).ToSlice()
+			assert.Equal(t, tt.input, got)
+
+			got = NewSliceByMapping[int, int, int](tt.input).ForEach(func(i int, v int) { assert.Equal(t, tt.input[i], v) }).ToSlice()
 			assert.Equal(t, tt.input, got)
 
 			got = NewSlice(tt.input).Parallel(10).ForEach(func(i int, v int) { assert.Equal(t, tt.input[i], v) }).ToSlice()
@@ -377,19 +420,19 @@ func TestSliceFindFunc(t *testing.T) {
 		want      int
 	}{
 		{
-			name:      "normal",
+			name:      "case",
 			input:     []int{1, 2, 1, 2, 1},
 			predicate: func(v int) bool { return v == 1 },
 			want:      0,
 		},
 		{
-			name:      "normal",
+			name:      "case",
 			input:     []int{1, 2, 1, 2, 1},
 			predicate: func(v int) bool { return v == 2 },
 			want:      1,
 		},
 		{
-			name:      "normal",
+			name:      "case",
 			input:     []int{1, 2},
 			predicate: func(v int) bool { return v == 3 },
 			want:      -1,
@@ -507,7 +550,7 @@ func TestSliceFirst(t *testing.T) {
 		want  int
 	}{
 		{
-			name:  "normal",
+			name:  "case",
 			input: []int{1, 2, 1},
 			want:  1,
 		},
@@ -539,21 +582,21 @@ func TestSliceInsert(t *testing.T) {
 		want   []int
 	}{
 		{
-			name:   "normal",
+			name:   "case",
 			input1: []int{1, 2, 3},
 			input2: []int{4, 5},
 			input3: 1,
 			want:   []int{1, 4, 5, 2, 3},
 		},
 		{
-			name:   "normal",
+			name:   "case",
 			input1: []int{1, 2, 3},
 			input2: []int{4, 5},
 			input3: 3,
 			want:   []int{1, 2, 3, 4, 5},
 		},
 		{
-			name:   "normal",
+			name:   "case",
 			input1: []int{1, 2, 3},
 			input2: []int{4, 5},
 			input3: 5,
@@ -591,14 +634,14 @@ func TestSliceDelete(t *testing.T) {
 		want   []int
 	}{
 		{
-			name:   "normal",
+			name:   "case",
 			input1: []int{1, 2, 3},
 			input2: 1,
 			input3: 2,
 			want:   []int{1, 3},
 		},
 		{
-			name:   "normal",
+			name:   "case",
 			input1: []int{1, 2, 3},
 			input2: 0,
 			input3: 1,
@@ -634,27 +677,27 @@ func TestSliceIsSorted(t *testing.T) {
 		want  bool
 	}{
 		{
-			name:  "normal",
+			name:  "case",
 			input: []int{1, 2, 1, 5},
 			want:  false,
 		},
 		{
-			name:  "normal",
+			name:  "case",
 			input: []int{-1, -2, -1, -5},
 			want:  false,
 		},
 		{
-			name:  "normal",
+			name:  "case",
 			input: []int{10, 11, 12, 13},
 			want:  true,
 		},
 		{
-			name:  "normal",
+			name:  "case",
 			input: []int{-1, -2, -3, -4},
 			want:  false,
 		},
 		{
-			name:  "normal",
+			name:  "case",
 			input: []int{-4, -3, -2, -1},
 			want:  true,
 		},
@@ -685,25 +728,25 @@ func TestSliceLimit(t *testing.T) {
 		want  []int
 	}{
 		{
-			name:  "exceed",
+			name:  "case",
 			input: []int{1, 2, 1},
 			limit: 5,
 			want:  []int{1, 2, 1},
 		},
 		{
-			name:  "no exceed",
+			name:  "case",
 			input: []int{1, 2, 1},
 			limit: 2,
 			want:  []int{1, 2},
 		},
 		{
-			name:  "all",
+			name:  "case",
 			input: []int{1, 2, 1},
 			limit: 3,
 			want:  []int{1, 2, 1},
 		},
 		{
-			name:  "limit(0)",
+			name:  "case",
 			input: []int{1, 2, 1},
 			limit: 0,
 			want:  []int{},
@@ -731,6 +774,9 @@ func TestSliceLimit(t *testing.T) {
 
 			got = NewSliceByOrdered(tt.input).Limit(tt.limit).ToSlice()
 			assert.Equal(t, tt.want, got)
+
+			got = NewSliceByMapping[int, int, int](tt.input).Limit(tt.limit).ToSlice()
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -743,13 +789,13 @@ func TestSliceMap(t *testing.T) {
 		want   []int
 	}{
 		{
-			name:   "normal",
+			name:   "case",
 			input:  []int{1, 2, 1},
 			mapper: func(i int) int { return i * 2 },
 			want:   []int{2, 4, 2},
 		},
 		{
-			name:   "normal",
+			name:   "case",
 			input:  []int{1, 2, 1},
 			mapper: func(i int) int { return i * 2 },
 			want:   []int{2, 4, 2},
@@ -796,17 +842,17 @@ func TestSliceMap(t *testing.T) {
 		want   []int
 	}{
 		{
-			name:   "normal",
+			name:   "case",
 			input:  newArray(100),
 			mapper: func(i int) int { return i * 2 },
 		},
 		{
-			name:   "normal",
+			name:   "case",
 			input:  newArray(200),
 			mapper: func(i int) int { return i * 3 },
 		},
 		{
-			name:   "normal",
+			name:   "case",
 			input:  newArray(300),
 			mapper: func(i int) int { return i * 4 },
 		},
@@ -827,17 +873,17 @@ func TestSliceMaxFunc(t *testing.T) {
 		want  int
 	}{
 		{
-			name:  "normal",
+			name:  "case",
 			input: []int{1, 2, 1, 5},
 			want:  5,
 		},
 		{
-			name:  "normal",
+			name:  "case",
 			input: []int{-1, -2, -1, -5},
 			want:  -1,
 		},
 		{
-			name:  "normal",
+			name:  "case",
 			input: []int{10, 2, 1, 5},
 			want:  10,
 		},
@@ -867,17 +913,17 @@ func TestSliceMinFunc(t *testing.T) {
 		want  int
 	}{
 		{
-			name:  "normal",
+			name:  "case",
 			input: []int{1, 2, 1, 5},
 			want:  1,
 		},
 		{
-			name:  "normal",
+			name:  "case",
 			input: []int{10, 2, 3, 1},
 			want:  1,
 		},
 		{
-			name:  "normal",
+			name:  "case",
 			input: []int{-1, -2, -3, -1},
 			want:  -3,
 		},
@@ -908,7 +954,7 @@ func TestSliceReduce(t *testing.T) {
 		want        int
 	}{
 		{
-			name:        "normal",
+			name:        "case",
 			input:       []int{1, 2, 1, 10},
 			accumulator: func(i int, j int) int { return i + j },
 			want:        14,
@@ -942,13 +988,13 @@ func TestSliceSortFunc(t *testing.T) {
 		want  []int
 	}{
 		{
-			name:  "normal",
+			name:  "case",
 			input: []int{1, 2, 1, 5},
 			less:  func(a, b int) bool { return a > b },
 			want:  []int{5, 2, 1, 1},
 		},
 		{
-			name:  "normal",
+			name:  "case",
 			input: []int{1, 2, 1, 5},
 			less:  func(a, b int) bool { return a < b },
 			want:  []int{1, 1, 2, 5},
@@ -976,6 +1022,9 @@ func TestSliceSortFunc(t *testing.T) {
 
 			got = NewSliceByOrdered(tt.input).SortFunc(tt.less).ToSlice()
 			assert.Equal(t, tt.want, got)
+
+			got = NewSliceByMapping[int, int, int](tt.input).SortFunc(tt.less).ToSlice()
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -988,13 +1037,13 @@ func TestSliceSortStableFunc(t *testing.T) {
 		want  []int
 	}{
 		{
-			name:  "normal",
+			name:  "case",
 			input: []int{1, 2, 1, 5},
 			less:  func(a, b int) bool { return a > b },
 			want:  []int{5, 2, 1, 1},
 		},
 		{
-			name:  "normal",
+			name:  "case",
 			input: []int{1, 2, 1, 5},
 			less:  func(a, b int) bool { return a < b },
 			want:  []int{1, 1, 2, 5},
@@ -1021,6 +1070,9 @@ func TestSliceSortStableFunc(t *testing.T) {
 			assert.Equal(t, tt.want, got)
 
 			got = NewSliceByOrdered(tt.input).SortStableFunc(tt.less).ToSlice()
+			assert.Equal(t, tt.want, got)
+
+			got = NewSliceByMapping[int, int, int](tt.input).SortStableFunc(tt.less).ToSlice()
 			assert.Equal(t, tt.want, got)
 		})
 	}

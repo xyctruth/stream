@@ -5,6 +5,7 @@ import (
 	"golang.org/x/exp/slices"
 )
 
+// SliceOrderedStream Generics constraints based on constraints.Ordered
 type SliceOrderedStream[E constraints.Ordered] struct {
 	SliceComparableStream[E]
 }
@@ -12,12 +13,6 @@ type SliceOrderedStream[E constraints.Ordered] struct {
 // NewSliceByOrdered new stream instance, generics constraints based on constraints.Ordered
 func NewSliceByOrdered[E constraints.Ordered](v []E) SliceOrderedStream[E] {
 	return SliceOrderedStream[E]{SliceComparableStream: NewSliceByComparable(v)}
-}
-
-// Parallel goroutines > 1 enable All, goroutines <= 1 disable All
-func (stream SliceOrderedStream[E]) Parallel(goroutines int) SliceOrderedStream[E] {
-	stream.SliceComparableStream = stream.SliceComparableStream.Parallel(goroutines)
-	return stream
 }
 
 // IsSorted reports whether x is sorted in ascending order.
@@ -60,46 +55,49 @@ func (stream SliceOrderedStream[E]) Sort() SliceOrderedStream[E] {
 	return stream
 }
 
-// Distinct Returns a stream consisting of the distinct elements of this stream.
-// Remove duplicate according to map comparable.
+// Distinct See SliceComparableStream.Distinct
 func (stream SliceOrderedStream[E]) Distinct() SliceOrderedStream[E] {
 	stream.SliceComparableStream = stream.SliceComparableStream.Distinct()
 	return stream
 }
 
-// ForEach Performs an action for each element of this stream.
+// Parallel See: SliceStream.Parallel
+func (stream SliceOrderedStream[E]) Parallel(goroutines int) SliceOrderedStream[E] {
+	stream.SliceStream = stream.SliceStream.Parallel(goroutines)
+	return stream
+}
+
+// ForEach See: SliceStream.ForEach
 func (stream SliceOrderedStream[E]) ForEach(action func(int, E)) SliceOrderedStream[E] {
 	stream.SliceStream = stream.SliceStream.ForEach(action)
 	return stream
 }
 
-// Filter Returns a stream consisting of the elements of this stream that match the given predicate.
+// Filter See: SliceStream.Filter
 func (stream SliceOrderedStream[E]) Filter(predicate func(E) bool) SliceOrderedStream[E] {
 	stream.SliceStream = stream.SliceStream.Filter(predicate)
 	return stream
 }
 
-// Limit Returns a stream consisting of the elements of this stream, truncated to be no longer than maxSize in length.
+// Limit See: SliceStream.Limit
 func (stream SliceOrderedStream[E]) Limit(maxSize int) SliceOrderedStream[E] {
 	stream.SliceStream = stream.SliceStream.Limit(maxSize)
 	return stream
 }
 
-// Map Returns a stream consisting of the results of applying the given function to the elements of this stream.
+// Map See: SliceStream.Map
 func (stream SliceOrderedStream[E]) Map(mapper func(E) E) SliceOrderedStream[E] {
 	stream.SliceStream = stream.SliceStream.Map(mapper)
 	return stream
 }
 
-// SortFunc Returns a sorted stream consisting of the elements of this stream.
-// Sorted according to slices.SortFunc.
+// SortFunc See: SliceStream.SortFunc
 func (stream SliceOrderedStream[E]) SortFunc(less func(a, b E) bool) SliceOrderedStream[E] {
 	stream.SliceStream = stream.SliceStream.SortFunc(less)
 	return stream
 }
 
-// SortStableFunc Returns a sorted stream consisting of the elements of this stream.
-// Sorted according to slices.SortStableFunc.
+// SortStableFunc See: SliceStream.SortStableFunc
 func (stream SliceOrderedStream[E]) SortStableFunc(less func(a, b E) bool) SliceOrderedStream[E] {
 	stream.SliceStream = stream.SliceStream.SortStableFunc(less)
 	return stream

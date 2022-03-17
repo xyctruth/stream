@@ -54,39 +54,37 @@ func (stream SliceMappingStream[E, MapE, ReduceE]) Reduce(accumulator func(Reduc
 	return result
 }
 
-// Parallel goroutines > 1 enable All, goroutines <= 1 disable All
+// Parallel See: SliceStream.Parallel
 func (stream SliceMappingStream[E, MapE, ReduceE]) Parallel(goroutines int) SliceMappingStream[E, MapE, ReduceE] {
 	stream.SliceStream = stream.SliceStream.Parallel(goroutines)
 	return stream
 }
 
-// ForEach Performs an action for each element of this stream.
+// ForEach See: SliceStream.ForEach
 func (stream SliceMappingStream[E, MapE, ReduceE]) ForEach(action func(int, E)) SliceMappingStream[E, MapE, ReduceE] {
 	stream.SliceStream = stream.SliceStream.ForEach(action)
 	return stream
 }
 
-// Filter Returns a stream consisting of the elements of this stream that match the given predicate.
+// Filter See: SliceStream.Filter
 func (stream SliceMappingStream[E, MapE, ReduceE]) Filter(predicate func(E) bool) SliceMappingStream[E, MapE, ReduceE] {
 	stream.SliceStream = stream.SliceStream.Filter(predicate)
 	return stream
 }
 
-// Limit Returns a stream consisting of the elements of this stream, truncated to be no longer than maxSize in length.
+// Limit See: SliceStream.Limit
 func (stream SliceMappingStream[E, MapE, ReduceE]) Limit(maxSize int) SliceMappingStream[E, MapE, ReduceE] {
 	stream.SliceStream = stream.SliceStream.Limit(maxSize)
 	return stream
 }
 
-// SortFunc Returns a sorted stream consisting of the elements of this stream.
-// Sorted according to slices.SortFunc.
+// SortFunc See: SliceStream.SortFunc
 func (stream SliceMappingStream[E, MapE, ReduceE]) SortFunc(less func(a, b E) bool) SliceMappingStream[E, MapE, ReduceE] {
 	stream.SliceStream = stream.SliceStream.SortFunc(less)
 	return stream
 }
 
-// SortStableFunc Returns a sorted stream consisting of the elements of this stream.
-// Sorted according to slices.SortStableFunc.
+// SortStableFunc See: SliceStream.SortStableFunc
 func (stream SliceMappingStream[E, MapE, ReduceE]) SortStableFunc(less func(a, b E) bool) SliceMappingStream[E, MapE, ReduceE] {
 	stream.SliceStream = stream.SliceStream.SortStableFunc(less)
 	return stream

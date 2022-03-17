@@ -12,27 +12,27 @@ func TestSliceOrderedIsSorted(t *testing.T) {
 		want  bool
 	}{
 		{
-			name:  "normal",
+			name:  "case",
 			input: []int{1, 2, 1, 5},
 			want:  false,
 		},
 		{
-			name:  "normal",
+			name:  "case",
 			input: []int{-1, -2, -1, -5},
 			want:  false,
 		},
 		{
-			name:  "normal",
+			name:  "case",
 			input: []int{10, 11, 12, 13},
 			want:  true,
 		},
 		{
-			name:  "normal",
+			name:  "case",
 			input: []int{-1, -2, -3, -4},
 			want:  false,
 		},
 		{
-			name:  "normal",
+			name:  "case",
 			input: []int{-4, -3, -2, -1},
 			want:  true,
 		},
@@ -62,17 +62,17 @@ func TestSliceOrderedMax(t *testing.T) {
 		want  int
 	}{
 		{
-			name:  "normal",
+			name:  "case",
 			input: []int{1, 2, 1, 5},
 			want:  5,
 		},
 		{
-			name:  "normal",
+			name:  "case",
 			input: []int{-1, -2, -1, -5},
 			want:  -1,
 		},
 		{
-			name:  "normal",
+			name:  "case",
 			input: []int{10, 2, 1, 5},
 			want:  10,
 		},
@@ -102,17 +102,17 @@ func TestSliceOrderedMin(t *testing.T) {
 		want  int
 	}{
 		{
-			name:  "normal",
+			name:  "case",
 			input: []int{1, 2, 1, 5},
 			want:  1,
 		},
 		{
-			name:  "normal",
+			name:  "case",
 			input: []int{10, 2, 3, 1},
 			want:  1,
 		},
 		{
-			name:  "normal",
+			name:  "case",
 			input: []int{-1, -2, -3, -1},
 			want:  -3,
 		},
@@ -142,7 +142,7 @@ func TestSliceOrderedSort(t *testing.T) {
 		want  []int
 	}{
 		{
-			name:  "normal",
+			name:  "case",
 			input: []int{1, 2, 1, 5},
 			want:  []int{1, 1, 2, 5},
 		},

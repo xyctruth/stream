@@ -2,6 +2,7 @@ package stream
 
 import "golang.org/x/exp/slices"
 
+// SliceComparableStream Generics constraints based on comparable
 type SliceComparableStream[E comparable] struct {
 	SliceStream[E]
 }
@@ -9,12 +10,6 @@ type SliceComparableStream[E comparable] struct {
 // NewSliceByComparable  new stream instance, generics constraints based on comparable
 func NewSliceByComparable[E comparable](v []E) SliceComparableStream[E] {
 	return SliceComparableStream[E]{SliceStream: NewSlice(v)}
-}
-
-// Parallel goroutines > 1 enable All, goroutines <= 1 disable All
-func (stream SliceComparableStream[E]) Parallel(goroutines int) SliceComparableStream[E] {
-	stream.SliceStream = stream.SliceStream.Parallel(goroutines)
-	return stream
 }
 
 // Distinct Returns a stream consisting of the distinct elements of this stream.
@@ -54,39 +49,43 @@ func (stream SliceComparableStream[E]) Find(dest E) int {
 	return -1
 }
 
-// ForEach Performs an action for each element of this stream.
+// Parallel See: SliceStream.Parallel
+func (stream SliceComparableStream[E]) Parallel(goroutines int) SliceComparableStream[E] {
+	stream.SliceStream = stream.SliceStream.Parallel(goroutines)
+	return stream
+}
+
+// ForEach See: SliceStream.ForEach
 func (stream SliceComparableStream[E]) ForEach(action func(int, E)) SliceComparableStream[E] {
 	stream.SliceStream = stream.SliceStream.ForEach(action)
 	return stream
 }
 
-// Filter Returns a stream consisting of the elements of this stream that match the given predicate.
+// Filter See: SliceStream.Filter
 func (stream SliceComparableStream[E]) Filter(predicate func(E) bool) SliceComparableStream[E] {
 	stream.SliceStream = stream.SliceStream.Filter(predicate)
 	return stream
 }
 
-// Limit Returns a stream consisting of the elements of this stream, truncated to be no longer than maxSize in length.
+// Limit See: SliceStream.Limit
 func (stream SliceComparableStream[E]) Limit(maxSize int) SliceComparableStream[E] {
 	stream.SliceStream = stream.SliceStream.Limit(maxSize)
 	return stream
 }
 
-// Map Returns a stream consisting of the results of applying the given function to the elements of this stream.
+// Map See: SliceStream.Map
 func (stream SliceComparableStream[E]) Map(mapper func(E) E) SliceComparableStream[E] {
 	stream.SliceStream = stream.SliceStream.Map(mapper)
 	return stream
 }
 
-// SortFunc Returns a sorted stream consisting of the elements of this stream.
-// Sorted according to slices.SortFunc.
+// SortFunc See: SliceStream.SortFunc
 func (stream SliceComparableStream[E]) SortFunc(less func(a, b E) bool) SliceComparableStream[E] {
 	stream.SliceStream = stream.SliceStream.SortFunc(less)
 	return stream
 }
 
-// SortStableFunc Returns a sorted stream consisting of the elements of this stream.
-// Sorted according to slices.SortStableFunc.
+// SortStableFunc See: SliceStream.SortStableFunc
 func (stream SliceComparableStream[E]) SortStableFunc(less func(a, b E) bool) SliceComparableStream[E] {
 	stream.SliceStream = stream.SliceStream.SortStableFunc(less)
 	return stream

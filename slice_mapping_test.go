@@ -14,7 +14,7 @@ func TestSliceMapping(t *testing.T) {
 		want2 string
 	}{
 		{
-			name:  "normal",
+			name:  "case",
 			input: []int{5, 1, 6, 2, 1},
 			want:  []string{"mapping_1", "mapping_2", "mapping_1"},
 			want2: "mapping_1/mapping_2/mapping_1/",
@@ -59,15 +59,15 @@ func TestSliceMapping(t *testing.T) {
 		want2 string
 	}{
 		{
-			name:  "normal",
+			name:  "case",
 			input: newArray(100),
 		},
 		{
-			name:  "normal",
+			name:  "case",
 			input: newArray(200),
 		},
 		{
-			name:  "normal",
+			name:  "case",
 			input: newArray(300),
 		},
 	}
