@@ -7,11 +7,11 @@ package stream
 //
 // For SliceStream.Map, SliceStream.Filter.
 type ParallelAll[E any, R any] struct {
-	slice   []E                   // element to be processed
-	handler ParallelHandler[E, R] // handler function
+	slice   []E                       // element to be processed
+	handler ParallelHandlerFunc[E, R] // handler function
 }
 
-func (p ParallelAll[E, R]) Process(goroutines int, slice []E, handler ParallelHandler[E, R]) []R {
+func (p ParallelAll[E, R]) Process(goroutines int, slice []E, handler ParallelHandlerFunc[E, R]) []R {
 	p.slice = slice
 	p.handler = handler
 
@@ -48,9 +48,7 @@ func (p ParallelAll[_, R]) resulted(resultChs []chan []R) []R {
 	results := make([]R, 0, len(p.slice))
 	for _, resultCh := range resultChs {
 		for result := range resultCh {
-			for _, r := range result {
-				results = append(results, r)
-			}
+			results = append(results, result...)
 		}
 	}
 	return results

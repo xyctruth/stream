@@ -1,10 +1,10 @@
 package stream
 
-// ParallelHandler Parallel processing Handler
+// ParallelHandlerFunc Parallel processing Handler
 //
 // - E elements type
 // - R result type
-type ParallelHandler[E any, R any] func(index int, elem E) (isReturn bool, result R)
+type ParallelHandlerFunc[E any, R any] func(index int, elem E) (isReturn bool, result R)
 
 // Parallel Provides parallel processing capabilities.
 //
@@ -17,13 +17,13 @@ type ParallelHandler[E any, R any] func(index int, elem E) (isReturn bool, resul
 //
 // ParallelAction All elements need to be processed in parallel, no return value required
 type Parallel[E any, R any] interface {
-	Process(goroutines int, slice []E, handler ParallelHandler[E, R]) []R
+	Process(goroutines int, slice []E, handler ParallelHandlerFunc[E, R]) []R
 }
 
 func ParallelProcess[T Parallel[E, R], E any, R any](
 	goroutines int,
 	slice []E,
-	handler ParallelHandler[E, R]) []R {
+	handler ParallelHandlerFunc[E, R]) []R {
 	var p T
 	return p.Process(goroutines, slice, handler)
 }

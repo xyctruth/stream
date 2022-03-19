@@ -15,9 +15,7 @@ func NewSlice[E any](v []E) SliceStream[E] {
 	if v == nil {
 		return SliceStream[E]{}
 	}
-	clone := make([]E, len(v))
-	copy(clone, v)
-	return SliceStream[E]{slice: clone}
+	return SliceStream[E]{slice: v}
 }
 
 // Parallel goroutines > 1 enable parallel, goroutines <= 1 disable parallel
@@ -254,7 +252,7 @@ func (stream SliceStream[E]) Limit(maxSize int) SliceStream[E] {
 		return stream
 	}
 
-	newSlice := make([]E, 0)
+	newSlice := make([]E, 0, maxSize)
 	for i := 0; i < len(stream.slice) && i < maxSize; i++ {
 		newSlice = append(newSlice, stream.slice[i])
 	}
@@ -281,9 +279,11 @@ func (stream SliceStream[E]) Map(mapper func(E) E) SliceStream[E] {
 		return stream
 	}
 
+	newSlice := make([]E, len(stream.slice))
 	for i, v := range stream.slice {
-		stream.slice[i] = mapper(v)
+		newSlice[i] = mapper(v)
 	}
+	stream.slice = newSlice
 	return stream
 }
 

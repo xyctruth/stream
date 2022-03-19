@@ -11,7 +11,7 @@ import "sync"
 type ParallelAction[E any, R any] struct {
 }
 
-func (p ParallelAction[E, R]) Process(goroutines int, slice []E, handler ParallelHandler[E, R]) []R {
+func (p ParallelAction[E, R]) Process(goroutines int, slice []E, handler ParallelHandlerFunc[E, R]) []R {
 	wg := sync.WaitGroup{}
 	partitions := partition(slice, goroutines)
 	wg.Add(len(partitions))

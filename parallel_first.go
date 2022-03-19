@@ -12,11 +12,11 @@ import (
 //
 // For SliceStream.AllMatch, SliceStream.AnyMatch, SliceStream.FindFunc.
 type ParallelFirst[E any, R any] struct {
-	slice   []E                   // element to be processed
-	handler ParallelHandler[E, R] // handler function
+	slice   []E                       // element to be processed
+	handler ParallelHandlerFunc[E, R] // handler function
 }
 
-func (p ParallelFirst[E, R]) Process(goroutines int, slice []E, handler ParallelHandler[E, R]) []R {
+func (p ParallelFirst[E, R]) Process(goroutines int, slice []E, handler ParallelHandlerFunc[E, R]) []R {
 	p.slice = slice
 	p.handler = handler
 

@@ -138,15 +138,16 @@ NewSlice(s).Parallel(goroutines).ForEach(func(i int, v int) {
 ```go
 go test -run=^$ -benchtime=5s -cpu=6  -bench=^BenchmarkParallelByCPU
 
+goos: darwin
 goarch: amd64
 pkg: github.com/xyctruth/stream
 cpu: Intel(R) Core(TM) i7-8750H CPU @ 2.20GHz
-BenchmarkParallelByCPU/no_parallel(0)-6         	     717	   9183119 ns/op
-BenchmarkParallelByCPU/goroutines(2)-6          	    1396	   4303113 ns/op
-BenchmarkParallelByCPU/goroutines(4)-6          	    2539	   2388197 ns/op
-BenchmarkParallelByCPU/goroutines(6)-6          	    2932	   2159407 ns/op
-BenchmarkParallelByCPU/goroutines(8)-6          	    2334	   2577405 ns/op
-BenchmarkParallelByCPU/goroutines(10)-6         	    2649	   2352926 ns/op
+BenchmarkParallelByCPU/no_Parallel(0)-6         	     710	   8265106 ns/op
+BenchmarkParallelByCPU/goroutines(2)-6          	    1387	   4333929 ns/op
+BenchmarkParallelByCPU/goroutines(4)-6          	    2540	   2361783 ns/op
+BenchmarkParallelByCPU/goroutines(6)-6          	    3024	   2100158 ns/op
+BenchmarkParallelByCPU/goroutines(8)-6          	    2347	   2531435 ns/op
+BenchmarkParallelByCPU/goroutines(10)-6         	    2622	   2306752 ns/op
 ```
 
 #### IO 操作
