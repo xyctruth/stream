@@ -7,6 +7,12 @@
 
 Stream is a Stream library based on Go 1.18+ Generics. It supports parallel processing of data in the stream. The parallel stream will divide the elements into multiple partitions equally, and create the same number of goroutine for execute, and will ensure that the elements in the stream remain in the original order after the processing is complete.
 
+## Features
+
+- [x] Parallel Stream
+- [ ] Pipeline, Combine multiple operations to reduce element loops, short-circuiting earlier
+- [ ] Lazy Invocation, Intermediate operations are lazy
+
 ## Installation
 
 Requires Go 1.18+ version installed
