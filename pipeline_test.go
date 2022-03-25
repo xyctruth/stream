@@ -1,29 +1,59 @@
 package stream
 
 import (
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
-func TestPipeline(t *testing.T) {
-	//s1 := intermediate[int]{func(index int, v int) (bool, int) {
-	//	fmt.Println(v)
-	//	return true, v + 1
-	//}}
-	//s2 := intermediate[int]{func(index int, v int) (bool, int) {
-	//	fmt.Println(v)
-	//	return true, v + 2
-	//}}
-	//s3 := intermediate[int]{func(index int, v int) (bool, int) {
-	//	fmt.Println(v)
-	//	return true, v + 3
-	//}}
-	//
-	//s1.Wrap(s2)
-	//s1.Wrap(s3)
-	//
-	//_ = terminationStage[int, string]{func(index int, v int) (bool, string) {
-	//	fmt.Println(v)
-	//	return true, fmt.Sprintf("str_%d", v)
-	//}}
+func TestPipelines(t *testing.T) {
+	tests := []struct {
+		name      string
+		input     []string
+		predicate func(v string) bool
+		mapper    func(v string) string
+		want      []string
+	}{
+		{
+			name:      "case",
+			input:     []string{"a", "b", "c"},
+			predicate: func(v string) bool { return v != "b" },
+			mapper: func(v string) string {
+				return v + "1"
+			},
+			want: []string{"a1", "c1"},
+		},
+		{
+			name:      "case",
+			input:     []string{"a", "b"},
+			predicate: func(v string) bool { return v == "c" },
+			want:      []string{},
+		},
+		{
+			name:      "nil",
+			input:     nil,
+			predicate: nil,
+			want:      nil,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := NewSlice(tt.input).Filter(tt.predicate).Map(tt.mapper).ToSlice()
+			assert.Equal(t, tt.want, got)
 
+			got = NewSlice(tt.input).Parallel(2).Filter(tt.predicate).Map(tt.mapper).ToSlice()
+			assert.Equal(t, tt.want, got)
+
+			got = NewSliceByComparable(tt.input).Filter(tt.predicate).Map(tt.mapper).ToSlice()
+			assert.Equal(t, tt.want, got)
+
+			got = NewSliceByComparable(tt.input).Parallel(2).Filter(tt.predicate).Map(tt.mapper).ToSlice()
+			assert.Equal(t, tt.want, got)
+
+			got = NewSliceByOrdered(tt.input).Filter(tt.predicate).Map(tt.mapper).ToSlice()
+			assert.Equal(t, tt.want, got)
+
+			got = NewSliceByOrdered(tt.input).Parallel(2).Filter(tt.predicate).Map(tt.mapper).ToSlice()
+			assert.Equal(t, tt.want, got)
+		})
+	}
 }

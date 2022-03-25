@@ -1,7 +1,7 @@
 package stream
 
 func PipelineIntermediate[E any](slice []E, goroutines int, intermediate IntermediateStage[E]) []E {
-	if intermediate == nil {
+	if slice == nil || intermediate == nil {
 		return slice
 	}
 

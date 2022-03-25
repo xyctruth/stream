@@ -35,6 +35,7 @@ func (stream SliceMappingStream[E, MapE, ReduceE]) Map(mapper func(E) MapE) Slic
 
 // Reduce Returns a slice consisting of the elements of this stream.
 func (stream SliceMappingStream[E, MapE, ReduceE]) Reduce(accumulator func(ReduceE, E) ReduceE) (result ReduceE) {
+	stream.evaluation()
 	if len(stream.slice) == 0 {
 		return result
 	}

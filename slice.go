@@ -35,6 +35,7 @@ func (stream SliceStream[E]) IsParallel() bool {
 
 // At Returns the element at the given index. Accepts negative integers, which count back from the last item.
 func (stream SliceStream[E]) At(index int) (elem E) {
+	stream.evaluation()
 	l := len(stream.slice)
 	if index < 0 {
 		index = index + l
@@ -106,7 +107,6 @@ func (stream SliceStream[E]) ForEach(action func(int, E)) SliceStream[E] {
 	if stream.slice == nil {
 		return stream
 	}
-
 	handler := func(index int, v E) (isReturn bool, isComplete bool, result struct{}) {
 		action(index, v)
 		return false, false, result
@@ -118,10 +118,10 @@ func (stream SliceStream[E]) ForEach(action func(int, E)) SliceStream[E] {
 // First Returns the first element in the stream.
 // If the slice is empty or nil then E Type default value is returned.
 func (stream SliceStream[E]) First() (elem E) {
+	stream.evaluation()
 	if len(stream.slice) == 0 {
 		return
 	}
-	stream.evaluation()
 	return stream.slice[0]
 }
 
@@ -154,10 +154,10 @@ func (stream SliceStream[E]) Filter(predicate func(E) bool) SliceStream[E] {
 // Insert inserts the values v... into s at index
 // If index is out of range then use Append to the end
 func (stream SliceStream[E]) Insert(index int, elements ...E) SliceStream[E] {
+	stream.evaluation()
 	if len(stream.slice) <= index {
 		return stream.Append(elements...)
 	}
-	stream.evaluation()
 	stream.slice = slices.Insert(stream.slice, index, elements...)
 	return stream
 }
@@ -165,10 +165,10 @@ func (stream SliceStream[E]) Insert(index int, elements ...E) SliceStream[E] {
 // Delete Removes the elements s[i:j] from this stream, returning the modified stream.
 // If the slice is empty or nil then do nothing
 func (stream SliceStream[E]) Delete(i, j int) SliceStream[E] {
+	stream.evaluation()
 	if len(stream.slice) == 0 {
 		return stream
 	}
-	stream.evaluation()
 	stream.slice = slices.Delete(stream.slice, i, j)
 	return stream
 }
@@ -184,10 +184,10 @@ func (stream SliceStream[E]) IsSortedFunc(less func(a, b E) bool) bool {
 
 // Limit Returns a stream consisting of the elements of this stream, truncated to be no longer than maxSize in length.
 func (stream SliceStream[E]) Limit(maxSize int) SliceStream[E] {
+	stream.evaluation()
 	if stream.slice == nil {
 		return stream
 	}
-	stream.evaluation()
 	newSlice := make([]E, 0, maxSize)
 	for i := 0; i < len(stream.slice) && i < maxSize; i++ {
 		newSlice = append(newSlice, stream.slice[i])
@@ -263,9 +263,6 @@ func (stream SliceStream[E]) SortStableFunc(less func(a, b E) bool) SliceStream[
 
 // ToSlice Returns a slice in the stream
 func (stream SliceStream[E]) ToSlice() []E {
-	if stream.slice == nil {
-		return stream.slice
-	}
 	stream.evaluation()
 	return stream.slice
 }
