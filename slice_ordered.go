@@ -19,6 +19,7 @@ func NewSliceByOrdered[E constraints.Ordered](v []E) SliceOrderedStream[E] {
 // Compare according to the constraints.Ordered.
 // If the slice is empty or nil then true is returned.
 func (stream SliceOrderedStream[E]) IsSorted() bool {
+	stream.evaluation()
 	return slices.IsSorted(stream.slice)
 }
 
@@ -26,6 +27,7 @@ func (stream SliceOrderedStream[E]) IsSorted() bool {
 // Compare according to the constraints.Ordered.
 // If the slice is empty or nil then E Type default value is returned.
 func (stream SliceOrderedStream[E]) Max() E {
+	stream.evaluation()
 	var max E
 	for i, v := range stream.slice {
 		if v > max || i == 0 {
@@ -39,6 +41,7 @@ func (stream SliceOrderedStream[E]) Max() E {
 // Compare according to the constraints.Ordered.
 // If the slice is empty or nil then E Type default value is returned.
 func (stream SliceOrderedStream[E]) Min() E {
+	stream.evaluation()
 	var min E
 	for i, v := range stream.slice {
 		if v < min || i == 0 {
@@ -51,6 +54,7 @@ func (stream SliceOrderedStream[E]) Min() E {
 // Sort Returns a sorted stream consisting of the elements of this stream.
 // Sorted according to slices.Sort.
 func (stream SliceOrderedStream[E]) Sort() SliceOrderedStream[E] {
+	stream.evaluation()
 	slices.Sort(stream.slice)
 	return stream
 }

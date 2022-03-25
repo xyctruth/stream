@@ -15,6 +15,8 @@ func NewSliceByComparable[E comparable](v []E) SliceComparableStream[E] {
 // Distinct Returns a stream consisting of the distinct elements of this stream.
 // Remove duplicate according to map comparable.
 func (stream SliceComparableStream[E]) Distinct() SliceComparableStream[E] {
+	stream.evaluation()
+
 	if stream.slice == nil && len(stream.slice) < 2 {
 		return stream
 	}
@@ -35,12 +37,14 @@ func (stream SliceComparableStream[E]) Distinct() SliceComparableStream[E] {
 // Equal Returns whether the slice in the stream is equal to the destination slice.
 // Equal according to the slices.Equal.
 func (stream SliceComparableStream[E]) Equal(dest []E) bool {
+	stream.evaluation()
 	return slices.Equal(stream.slice, dest)
 }
 
 // Find Returns the index of the first element in the stream that matches the target element.
 // If not found then -1 is returned.
 func (stream SliceComparableStream[E]) Find(dest E) int {
+	stream.evaluation()
 	for i, v := range stream.slice {
 		if v == dest {
 			return i

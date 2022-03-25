@@ -24,22 +24,13 @@ func (stream SliceMappingStream[E, MapE, ReduceE]) Map(mapper func(E) MapE) Slic
 	if stream.slice == nil {
 		return NewSliceByMapping[MapE, MapE, ReduceE](nil)
 	}
-	if stream.IsParallel() {
-		handler := func(index int, v E) (isReturn bool, result MapE) {
-			return true, mapper(v)
-		}
-		newSlice := ParallelProcess[ParallelAll[E, MapE], E, MapE](
-			stream.goroutines,
-			stream.slice,
-			handler)
-		return NewSliceByMapping[MapE, MapE, ReduceE](newSlice)
-	}
 
-	newSlice := make([]MapE, len(stream.slice))
-	for i, v := range stream.slice {
-		newSlice[i] = mapper(v)
+	handler := func(index int, v E) (isReturn bool, isComplete bool, ret MapE) {
+		return true, false, mapper(v)
 	}
-	return NewSliceByMapping[MapE, MapE, ReduceE](newSlice)
+	return NewSliceByMapping[MapE, MapE, ReduceE](
+		PipelineTermination[E, MapE](stream.slice, stream.goroutines, stream.intermediate, handler, ParallelAllType),
+	)
 }
 
 // Reduce Returns a slice consisting of the elements of this stream.

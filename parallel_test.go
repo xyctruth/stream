@@ -15,11 +15,11 @@ func BenchmarkParallelByCPU(b *testing.B) {
 		action     func(int, int)
 	}{
 		{name: "no Parallel", goroutines: 0},
-		{name: "goroutines", goroutines: 2},
-		{name: "goroutines", goroutines: 4},
-		{name: "goroutines", goroutines: 6},
-		{name: "goroutines", goroutines: 8},
-		{name: "goroutines", goroutines: 10},
+		{name: "Goroutines", goroutines: 2},
+		{name: "Goroutines", goroutines: 4},
+		{name: "Goroutines", goroutines: 6},
+		{name: "Goroutines", goroutines: 8},
+		{name: "Goroutines", goroutines: 10},
 	}
 	s := newArray(100)
 
@@ -42,13 +42,13 @@ func BenchmarkParallelByIO(b *testing.B) {
 		action     func(int, int)
 	}{
 		{name: "no Parallel", goroutines: 0},
-		{name: "goroutines", goroutines: 2},
-		{name: "goroutines", goroutines: 4},
-		{name: "goroutines", goroutines: 6},
-		{name: "goroutines", goroutines: 8},
-		{name: "goroutines", goroutines: 10},
-		{name: "goroutines", goroutines: 50},
-		{name: "goroutines", goroutines: 100},
+		{name: "Goroutines", goroutines: 2},
+		{name: "Goroutines", goroutines: 4},
+		{name: "Goroutines", goroutines: 6},
+		{name: "Goroutines", goroutines: 8},
+		{name: "Goroutines", goroutines: 10},
+		{name: "Goroutines", goroutines: 50},
+		{name: "Goroutines", goroutines: 100},
 	}
 	s := newArray(100)
 
@@ -71,13 +71,13 @@ func BenchmarkParallelAForEach(b *testing.B) {
 		action     func(int, int)
 	}{
 		{name: "no Parallel", goroutines: 0},
-		{name: "goroutines", goroutines: 2},
-		{name: "goroutines", goroutines: 4},
-		{name: "goroutines", goroutines: 6},
-		{name: "goroutines", goroutines: 8},
-		{name: "goroutines", goroutines: 10},
-		{name: "goroutines", goroutines: 50},
-		{name: "goroutines", goroutines: 100},
+		{name: "Goroutines", goroutines: 2},
+		{name: "Goroutines", goroutines: 4},
+		{name: "Goroutines", goroutines: 6},
+		{name: "Goroutines", goroutines: 8},
+		{name: "Goroutines", goroutines: 10},
+		{name: "Goroutines", goroutines: 50},
+		{name: "Goroutines", goroutines: 100},
 	}
 	s := newArray(10000000)
 
@@ -99,13 +99,13 @@ func BenchmarkParallelAMap(b *testing.B) {
 		action     func(int, int)
 	}{
 		{name: "no Parallel", goroutines: 0},
-		{name: "goroutines", goroutines: 2},
-		{name: "goroutines", goroutines: 4},
-		{name: "goroutines", goroutines: 6},
-		{name: "goroutines", goroutines: 8},
-		{name: "goroutines", goroutines: 10},
-		{name: "goroutines", goroutines: 50},
-		{name: "goroutines", goroutines: 100},
+		{name: "Goroutines", goroutines: 2},
+		{name: "Goroutines", goroutines: 4},
+		{name: "Goroutines", goroutines: 6},
+		{name: "Goroutines", goroutines: 8},
+		{name: "Goroutines", goroutines: 10},
+		{name: "Goroutines", goroutines: 50},
+		{name: "Goroutines", goroutines: 100},
 	}
 	s := newArray(10000000)
 

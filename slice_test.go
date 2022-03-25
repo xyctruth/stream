@@ -57,16 +57,6 @@ func TestNewSliceStream(t *testing.T) {
 	}
 }
 
-func TestSliceParallel(t *testing.T) {
-	s := NewSlice(newArray(1)).Parallel(1)
-	assert.Equal(t, false, s.IsParallel())
-	assert.Equal(t, 1, s.goroutines)
-
-	s = s.Parallel(10)
-	assert.Equal(t, true, s.IsParallel())
-	assert.Equal(t, 10, s.goroutines)
-}
-
 func TestSliceAt(t *testing.T) {
 	tests := []struct {
 		name  string

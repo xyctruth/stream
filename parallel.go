@@ -20,11 +20,31 @@ type Parallel[E any, R any] interface {
 	Process(goroutines int, slice []E, handler ParallelHandlerFunc[E, R]) []R
 }
 
-func ParallelProcess[T Parallel[E, R], E any, R any](
+type ParallelType int
+
+const (
+	ParallelFirstType ParallelType = iota
+	ParallelAllType
+	ParallelActionType
+)
+
+func ParallelProcess[E any, R any](
 	goroutines int,
 	slice []E,
-	handler ParallelHandlerFunc[E, R]) []R {
-	var p T
+	handler ParallelHandlerFunc[E, R],
+	parallelType ParallelType) []R {
+
+	var p Parallel[E, R]
+
+	switch parallelType {
+	case ParallelFirstType:
+		p = ParallelFirst[E, R]{}
+	case ParallelAllType:
+		p = ParallelAll[E, R]{}
+	case ParallelActionType:
+		p = ParallelAction[E, R]{}
+
+	}
 	return p.Process(goroutines, slice, handler)
 }
 

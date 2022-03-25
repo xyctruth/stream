@@ -6,8 +6,9 @@ import (
 
 // SliceStream Generics constraints based on any
 type SliceStream[E any] struct {
-	slice      []E
-	goroutines int
+	slice        []E
+	goroutines   int
+	intermediate IntermediateStage[E]
 }
 
 // NewSlice new stream instance, generics constraints based on any.
@@ -18,7 +19,7 @@ func NewSlice[E any](v []E) SliceStream[E] {
 	return SliceStream[E]{slice: v}
 }
 
-// Parallel goroutines > 1 enable parallel, goroutines <= 1 disable parallel
+// Parallel Goroutines > 1 enable parallel, Goroutines <= 1 disable parallel
 func (stream SliceStream[E]) Parallel(goroutines int) SliceStream[E] {
 	stream.goroutines = goroutines
 	return stream
@@ -49,30 +50,14 @@ func (stream SliceStream[E]) At(index int) (elem E) {
 //
 // Support Parallel.
 func (stream SliceStream[E]) AllMatch(predicate func(E) bool) bool {
-	if stream.IsParallel() {
-		handler := func(index int, v E) (isReturn bool, result bool) {
-			return !predicate(v), false
-		}
-
-		results := ParallelProcess[ParallelFirst[E, bool], E, bool](
-			stream.goroutines,
-			stream.slice,
-			handler,
-		)
-
-		if len(results) > 0 {
-			return results[0]
-		}
-		return true
+	handler := func(index int, v E) (isReturn bool, isComplete bool, ret bool) {
+		return !predicate(v), true, false
 	}
-
-	for _, v := range stream.slice {
-		if !predicate(v) {
-			return false
-		}
+	results := PipelineTermination[E, bool](stream.slice, stream.goroutines, stream.intermediate, handler, ParallelFirstType)
+	if len(results) > 0 {
+		return results[0]
 	}
 	return true
-
 }
 
 // AnyMatch Returns whether any elements in the stream match the provided predicate.
@@ -80,32 +65,19 @@ func (stream SliceStream[E]) AllMatch(predicate func(E) bool) bool {
 //
 // Support Parallel.
 func (stream SliceStream[E]) AnyMatch(predicate func(E) bool) bool {
-	if stream.IsParallel() {
-		handler := func(index int, v E) (isReturn bool, result bool) {
-			return predicate(v), true
-		}
-		results := ParallelProcess[ParallelFirst[E, bool], E, bool](
-			stream.goroutines,
-			stream.slice,
-			handler,
-		)
-
-		if len(results) > 0 {
-			return results[0]
-		}
-		return false
+	handler := func(index int, v E) (isReturn bool, isComplete bool, ret bool) {
+		return predicate(v), true, true
 	}
-
-	for _, v := range stream.slice {
-		if predicate(v) {
-			return true
-		}
+	results := PipelineTermination[E, bool](stream.slice, stream.goroutines, stream.intermediate, handler, ParallelFirstType)
+	if len(results) > 0 {
+		return results[0]
 	}
 	return false
 }
 
 // Append appends elements to the end of this stream
 func (stream SliceStream[E]) Append(elements ...E) SliceStream[E] {
+	stream.evaluation()
 	newSlice := make([]E, 0, len(stream.slice)+len(elements))
 	newSlice = append(newSlice, stream.slice...)
 	newSlice = append(newSlice, elements...)
@@ -115,12 +87,14 @@ func (stream SliceStream[E]) Append(elements ...E) SliceStream[E] {
 
 // Count Returns the count of elements in this stream.
 func (stream SliceStream[E]) Count() int {
+	stream.evaluation()
 	return len(stream.slice)
 }
 
 // EqualFunc Returns whether the slice in the stream is equal to the destination slice.
 // Equal according to the slices.EqualFunc
 func (stream SliceStream[E]) EqualFunc(dest []E, equal func(E, E) bool) bool {
+	stream.evaluation()
 	return slices.EqualFunc(stream.slice, dest, equal)
 }
 
@@ -133,21 +107,11 @@ func (stream SliceStream[E]) ForEach(action func(int, E)) SliceStream[E] {
 		return stream
 	}
 
-	if stream.IsParallel() {
-		handler := func(index int, v E) (isReturn bool, result E) {
-			action(index, v)
-			return false, result
-		}
-		ParallelProcess[ParallelAction[E, E], E, E](
-			stream.goroutines,
-			stream.slice,
-			handler)
-		return stream
+	handler := func(index int, v E) (isReturn bool, isComplete bool, result struct{}) {
+		action(index, v)
+		return false, false, result
 	}
-
-	for i, v := range stream.slice {
-		action(i, v)
-	}
+	PipelineTermination[E, struct{}](stream.slice, stream.goroutines, stream.intermediate, handler, ParallelActionType)
 	return stream
 }
 
@@ -157,6 +121,7 @@ func (stream SliceStream[E]) First() (elem E) {
 	if len(stream.slice) == 0 {
 		return
 	}
+	stream.evaluation()
 	return stream.slice[0]
 }
 
@@ -166,25 +131,12 @@ func (stream SliceStream[E]) First() (elem E) {
 // Support Parallel.
 // Parallel side effect is that the element found may not be the first to appear
 func (stream SliceStream[E]) FindFunc(predicate func(E) bool) int {
-	if stream.IsParallel() {
-		handler := func(index int, v E) (isReturn bool, result int) {
-			return predicate(v), index
-		}
-		results := ParallelProcess[ParallelFirst[E, int], E, int](
-			stream.goroutines,
-			stream.slice,
-			handler)
-
-		if len(results) > 0 {
-			return results[0]
-		}
-		return -1
+	handler := func(index int, v E) (isReturn bool, isComplete bool, ret int) {
+		return predicate(v), true, index
 	}
-
-	for i, v := range stream.slice {
-		if predicate(v) {
-			return i
-		}
+	results := PipelineTermination[E, int](stream.slice, stream.goroutines, stream.intermediate, handler, ParallelFirstType)
+	if len(results) > 0 {
+		return results[0]
 	}
 	return -1
 }
@@ -193,28 +145,9 @@ func (stream SliceStream[E]) FindFunc(predicate func(E) bool) int {
 //
 // Support Parallel.
 func (stream SliceStream[E]) Filter(predicate func(E) bool) SliceStream[E] {
-	if stream.slice == nil {
-		return stream
-	}
-
-	if stream.IsParallel() {
-		handler := func(index int, v E) (isReturn bool, result E) {
-			return predicate(v), v
-		}
-		stream.slice = ParallelProcess[ParallelAll[E, E], E, E](
-			stream.goroutines,
-			stream.slice,
-			handler)
-		return stream
-	}
-
-	newSlice := make([]E, 0)
-	for _, v := range stream.slice {
-		if predicate(v) {
-			newSlice = append(newSlice, v)
-		}
-	}
-	stream.slice = newSlice
+	stream.intermediate = stream.intermediate.Wrap(func(index int, e E) (bool, E) {
+		return predicate(e), e
+	})
 	return stream
 }
 
@@ -224,6 +157,7 @@ func (stream SliceStream[E]) Insert(index int, elements ...E) SliceStream[E] {
 	if len(stream.slice) <= index {
 		return stream.Append(elements...)
 	}
+	stream.evaluation()
 	stream.slice = slices.Insert(stream.slice, index, elements...)
 	return stream
 }
@@ -234,6 +168,7 @@ func (stream SliceStream[E]) Delete(i, j int) SliceStream[E] {
 	if len(stream.slice) == 0 {
 		return stream
 	}
+	stream.evaluation()
 	stream.slice = slices.Delete(stream.slice, i, j)
 	return stream
 }
@@ -243,6 +178,7 @@ func (stream SliceStream[E]) Delete(i, j int) SliceStream[E] {
 // - less: return a > b
 // If the slice is empty or nil then true is returned.
 func (stream SliceStream[E]) IsSortedFunc(less func(a, b E) bool) bool {
+	stream.evaluation()
 	return slices.IsSortedFunc(stream.slice, less)
 }
 
@@ -251,7 +187,7 @@ func (stream SliceStream[E]) Limit(maxSize int) SliceStream[E] {
 	if stream.slice == nil {
 		return stream
 	}
-
+	stream.evaluation()
 	newSlice := make([]E, 0, maxSize)
 	for i := 0; i < len(stream.slice) && i < maxSize; i++ {
 		newSlice = append(newSlice, stream.slice[i])
@@ -264,26 +200,9 @@ func (stream SliceStream[E]) Limit(maxSize int) SliceStream[E] {
 //
 // Support Parallel.
 func (stream SliceStream[E]) Map(mapper func(E) E) SliceStream[E] {
-	if stream.slice == nil {
-		return stream
-	}
-
-	if stream.IsParallel() {
-		handler := func(index int, v E) (isReturn bool, result E) {
-			return true, mapper(v)
-		}
-		stream.slice = ParallelProcess[ParallelAll[E, E], E, E](
-			stream.goroutines,
-			stream.slice,
-			handler)
-		return stream
-	}
-
-	newSlice := make([]E, len(stream.slice))
-	for i, v := range stream.slice {
-		newSlice[i] = mapper(v)
-	}
-	stream.slice = newSlice
+	stream.intermediate = stream.intermediate.Wrap(func(index int, v E) (isReturn bool, result E) {
+		return true, mapper(v)
+	})
 	return stream
 }
 
@@ -291,6 +210,7 @@ func (stream SliceStream[E]) Map(mapper func(E) E) SliceStream[E] {
 // - less: return a > b
 // If the slice is empty or nil then E Type default value is returned.
 func (stream SliceStream[E]) MaxFunc(less func(a, b E) bool) (max E) {
+	stream.evaluation()
 	for i, v := range stream.slice {
 		if less(v, max) || i == 0 {
 			max = v
@@ -303,6 +223,7 @@ func (stream SliceStream[E]) MaxFunc(less func(a, b E) bool) (max E) {
 // - less: return a < b
 // If the slice is empty or nil then E Type default value is returned.
 func (stream SliceOrderedStream[E]) MinFunc(less func(a, b E) bool) (min E) {
+	stream.evaluation()
 	for i, v := range stream.slice {
 		if less(v, min) || i == 0 {
 			min = v
@@ -313,6 +234,7 @@ func (stream SliceOrderedStream[E]) MinFunc(less func(a, b E) bool) (min E) {
 
 // Reduce Returns a slice consisting of the elements of this stream.
 func (stream SliceStream[E]) Reduce(accumulator func(E, E) E) (result E) {
+	stream.evaluation()
 	if len(stream.slice) == 0 {
 		return result
 	}
@@ -326,6 +248,7 @@ func (stream SliceStream[E]) Reduce(accumulator func(E, E) E) (result E) {
 // SortFunc Returns a sorted stream consisting of the elements of this stream.
 // Sorted according to slices.SortFunc.
 func (stream SliceStream[E]) SortFunc(less func(a, b E) bool) SliceStream[E] {
+	stream.evaluation()
 	slices.SortFunc(stream.slice, less)
 	return stream
 }
@@ -333,11 +256,21 @@ func (stream SliceStream[E]) SortFunc(less func(a, b E) bool) SliceStream[E] {
 // SortStableFunc Returns a sorted stream consisting of the elements of this stream.
 // Sorted according to slices.SortStableFunc.
 func (stream SliceStream[E]) SortStableFunc(less func(a, b E) bool) SliceStream[E] {
+	stream.evaluation()
 	slices.SortStableFunc(stream.slice, less)
 	return stream
 }
 
 // ToSlice Returns a slice in the stream
 func (stream SliceStream[E]) ToSlice() []E {
+	if stream.slice == nil {
+		return stream.slice
+	}
+	stream.evaluation()
 	return stream.slice
+}
+
+func (stream *SliceStream[E]) evaluation() {
+	stream.slice = PipelineIntermediate[E](stream.slice, stream.goroutines, stream.intermediate)
+	stream.intermediate = nil
 }
