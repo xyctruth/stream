@@ -8,40 +8,43 @@ type SliceComparableStream[E comparable] struct {
 }
 
 // NewSliceByComparable  new stream instance, generics constraints based on comparable
-func NewSliceByComparable[E comparable](v []E) SliceComparableStream[E] {
-	return SliceComparableStream[E]{SliceStream: NewSlice(v)}
+func NewSliceByComparable[E comparable](source []E) SliceComparableStream[E] {
+	return SliceComparableStream[E]{SliceStream: NewSlice(source)}
 }
 
 // Distinct Returns a stream consisting of the distinct elements of this stream.
 // Remove duplicate according to map comparable.
 func (stream SliceComparableStream[E]) Distinct() SliceComparableStream[E] {
-	if stream.slice == nil && len(stream.slice) < 2 {
+	stream.evaluation()
+	if stream.source == nil && len(stream.source) < 2 {
 		return stream
 	}
 
 	newSlice := make([]E, 0)
 	distinct := map[E]struct{}{}
-	for _, v := range stream.slice {
+	for _, v := range stream.source {
 		if _, ok := distinct[v]; ok {
 			continue
 		}
 		distinct[v] = struct{}{}
 		newSlice = append(newSlice, v)
 	}
-	stream.slice = newSlice
+	stream.source = newSlice
 	return stream
 }
 
-// Equal Returns whether the slice in the stream is equal to the destination slice.
+// Equal Returns whether the source in the stream is equal to the destination source.
 // Equal according to the slices.Equal.
 func (stream SliceComparableStream[E]) Equal(dest []E) bool {
-	return slices.Equal(stream.slice, dest)
+	stream.evaluation()
+	return slices.Equal(stream.source, dest)
 }
 
 // Find Returns the index of the first element in the stream that matches the target element.
 // If not found then -1 is returned.
 func (stream SliceComparableStream[E]) Find(dest E) int {
-	for i, v := range stream.slice {
+	stream.evaluation()
+	for i, v := range stream.source {
 		if v == dest {
 			return i
 		}
@@ -57,7 +60,7 @@ func (stream SliceComparableStream[E]) Parallel(goroutines int) SliceComparableS
 
 // ForEach See: SliceStream.ForEach
 func (stream SliceComparableStream[E]) ForEach(action func(int, E)) SliceComparableStream[E] {
-	stream.SliceStream = stream.SliceStream.ForEach(action)
+	stream.SliceStream.ForEach(action)
 	return stream
 }
 

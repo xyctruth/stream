@@ -29,18 +29,18 @@ func newArrayN(count int, n int) []int {
 func TestNewSliceStream(t *testing.T) {
 	tests := []struct {
 		name  string
-		input []string
-		want  []string
+		input []int
+		want  []int
 	}{
 		{
 			name:  "case",
-			input: []string{"a", "b"},
-			want:  []string{"a", "b"},
+			input: []int{1, 2},
+			want:  []int{1, 2},
 		},
 		{
 			name:  "empty",
-			input: []string{},
-			want:  []string{},
+			input: []int{},
+			want:  []int{},
 		},
 		{
 			name:  "nil",
@@ -55,16 +55,6 @@ func TestNewSliceStream(t *testing.T) {
 			assert.Equal(t, tt.want, got)
 		})
 	}
-}
-
-func TestSliceParallel(t *testing.T) {
-	s := NewSlice(newArray(1)).Parallel(1)
-	assert.Equal(t, false, s.IsParallel())
-	assert.Equal(t, 1, s.goroutines)
-
-	s = s.Parallel(10)
-	assert.Equal(t, true, s.IsParallel())
-	assert.Equal(t, 10, s.goroutines)
 }
 
 func TestSliceAt(t *testing.T) {
@@ -1074,6 +1064,119 @@ func TestSliceSortStableFunc(t *testing.T) {
 
 			got = NewSliceByMapping[int, int, int](tt.input).SortStableFunc(tt.less).ToSlice()
 			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestSlicePipelines(t *testing.T) {
+	tests := []struct {
+		name      string
+		input     []string
+		predicate func(v string) bool
+		mapper    func(v string) string
+		want      []string
+	}{
+		{
+			name:      "case",
+			input:     []string{"a", "b", "c"},
+			predicate: func(v string) bool { return v != "b" },
+			mapper: func(v string) string {
+				return v + "1"
+			},
+			want: []string{"a1", "c1"},
+		},
+		{
+			name:      "case",
+			input:     []string{"a", "b"},
+			predicate: func(v string) bool { return v == "c" },
+			want:      []string{},
+		},
+		{
+			name:      "nil",
+			input:     nil,
+			predicate: nil,
+			want:      nil,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := NewSlice(tt.input).Filter(tt.predicate).Map(tt.mapper).ToSlice()
+			assert.Equal(t, tt.want, got)
+
+			got = NewSlice(tt.input).Parallel(2).Filter(tt.predicate).Map(tt.mapper).ToSlice()
+			assert.Equal(t, tt.want, got)
+
+			got = NewSliceByComparable(tt.input).Filter(tt.predicate).Map(tt.mapper).ToSlice()
+			assert.Equal(t, tt.want, got)
+
+			got = NewSliceByComparable(tt.input).Parallel(2).Filter(tt.predicate).Map(tt.mapper).ToSlice()
+			assert.Equal(t, tt.want, got)
+
+			got = NewSliceByOrdered(tt.input).Filter(tt.predicate).Map(tt.mapper).ToSlice()
+			assert.Equal(t, tt.want, got)
+
+			got = NewSliceByOrdered(tt.input).Parallel(2).Filter(tt.predicate).Map(tt.mapper).ToSlice()
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestSlicePipelineForEach(t *testing.T) {
+	tests := []struct {
+		name   string
+		input  []int
+		mapper func(v int) int
+		want   []int
+	}{
+		{
+			name:  "case",
+			input: []int{1, 2, 3},
+			mapper: func(v int) int {
+				return v + 1
+			},
+			want: []int{2, 3, 4},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s1 := NewSliceByOrdered(tt.input).Map(tt.mapper).ForEach(func(i int, v int) { assert.Equal(t, tt.want[i], v) })
+			assert.Nil(t, s1.stages)
+			assert.Equal(t, tt.want, s1.ToSlice())
+
+			s2 := NewSliceByOrdered(tt.input).Parallel(2).Map(tt.mapper).ForEach(func(i int, v int) { assert.Equal(t, tt.want[i], v) })
+			assert.Nil(t, s2.stages)
+			assert.Equal(t, tt.want, s2.ToSlice())
+		})
+	}
+}
+
+func TestSlicePipelineSort(t *testing.T) {
+	tests := []struct {
+		name   string
+		input  []int
+		mapper func(v int) int
+		want   []int
+	}{
+		{
+			name:  "case",
+			input: []int{30, 10, 20},
+			mapper: func(v int) int {
+				return v + 1
+			},
+			want: []int{11, 21, 31},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s1 := NewSliceByOrdered(tt.input).Map(tt.mapper).Sort()
+			assert.Nil(t, s1.stages)
+			assert.Equal(t, tt.want, s1.ToSlice())
+
+			s2 := NewSliceByOrdered(tt.input).Parallel(2).Map(tt.mapper).Sort()
+			assert.Nil(t, s2.stages)
+			assert.Equal(t, tt.want, s2.ToSlice())
 		})
 	}
 }

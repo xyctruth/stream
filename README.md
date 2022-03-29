@@ -1,27 +1,20 @@
-# Stream: A Stream library based on Go 1.18+ Generics (Support Parallel Stream)
+# Stream
 
 [![Build](https://github.com/xyctruth/stream/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/xyctruth/stream/actions/workflows/build.yml)
 [![codecov](https://codecov.io/gh/xyctruth/stream/branch/main/graph/badge.svg?token=ZHMPMQP0CP)](https://codecov.io/gh/xyctruth/stream)
 
 > [English](./README.md) / [中文](./README-ZH.md)
 
-Stream is a Stream library based on Go 1.18+ Generics. It supports parallel processing of data in the stream. The parallel stream will divide the elements into multiple partitions equally, and create the same number of goroutine for execute, and will ensure that the elements in the stream remain in the original order after the processing is complete.
-
+Stream is a Stream library based on Go 1.18+ Generics. It supports parallel processing of data in the stream.
 ## Features
 
-- [x] Parallel Stream
-- [ ] Pipeline, Combine multiple operations to reduce element loops, short-circuiting earlier
-- [ ] Lazy Invocation, Intermediate operations are lazy
+- [x] Parallel Stream: Keep the original order of elements in the stream
+- [x] Pipeline: combine multiple operations to reduce element loops, short-circuiting earlier
+- [x] Lazy Invocation: intermediate operations are lazy
 
 ## Installation
 
 Requires Go 1.18+ version installed
-
-```bash
-$ go get github.com/xyctruth/stream
-```
-
-Import it in code
 
 ```go
 import "github.com/xyctruth/stream"
@@ -36,12 +29,6 @@ s := stream.NewSliceByOrdered([]string{"d", "a", "b", "c", "a"}).
     Sort().
     Distinct().
     ToSlice()
-
-// Need to convert the type of slice elements
-s := stream.NewSliceByMapping[int, string, string]([]int{1, 2, 3, 4, 5}).
-    Filter(func(v int) bool { return v >3 }).
-    Map(func(v int) string { return "mapping_" + strconv.Itoa(v) }).
-    Reduce(func(r string, v string) string { return r + v })
 ```
 
 ## Type Constraints
@@ -49,30 +36,18 @@ s := stream.NewSliceByMapping[int, string, string]([]int{1, 2, 3, 4, 5}).
 `any` accepts elements of any type, so you cannot use `==` `!=` `>` `<` to compare elements, which will prevent you from using Sort(), Find()... functions, but you can use SortFunc(fn), FindFunc(fn)... instead
 
 ```go
-type SliceStream[E any] struct {
-    slice      []E
-}
-
 stream.NewSlice([]int{1, 2, 3, 7, 1})
 ```
 
 `comparable` accepts type can use `==` `!=` to compare elements, but still can't use `>` `<` to compare elements, so you can't use Sort(), Min()... functions, but you can use SortFunc(fn), MinFunc()... instead
 
 ```go
-type SliceComparableStream[E comparable] struct {
-    SliceStream[E]
-}
-
 stream.NewSliceByComparable([]int{1, 2, 3, 7, 1})
 ```
 
 `constraints.Ordered` accepts types that can use `==` `!=` `>` `<`  to compare elements, so can use all functions
 
 ```go
-type SliceOrderedStream[E constraints.Ordered] struct {
-    SliceComparableStream[E]
-}
-
 stream.NewSliceByOrdered([]int{1, 2, 3, 7, 1})
 ```
 
