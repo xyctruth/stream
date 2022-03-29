@@ -8,7 +8,7 @@
 Stream is a Stream library based on Go 1.18+ Generics. It supports parallel processing of data in the stream.
 ## Features
 
-- [x] Parallel Stream: Keep elements in the stream in their original order after parallel processing is complete
+- [x] Parallel Stream: Keep the original order of elements in the stream
 - [x] Pipeline: combine multiple operations to reduce element loops, short-circuiting earlier
 - [x] Lazy Invocation: intermediate operations are lazy
 
