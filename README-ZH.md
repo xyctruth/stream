@@ -1,31 +1,25 @@
-# Stream: 基于 Go 1.18+ 泛型的流式处理库 (支持并行流)
+# Stream
 
 [![Build](https://github.com/xyctruth/stream/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/xyctruth/stream/actions/workflows/build.yml)
 [![codecov](https://codecov.io/gh/xyctruth/stream/branch/main/graph/badge.svg?token=ZHMPMQP0CP)](https://codecov.io/gh/xyctruth/stream)
 
 > [English](./README.md) / [中文](./README-ZH.md)
 
-Stream 是一个基于 Go 1.18+ 泛型的流式处理库, 它支持并行处理流中的数据. 并行流会将元素平均划分多个的分区, 并创建相同数量的 goroutine 执行, 并且会保证处理完成后流中元素保持原始顺序.
+Stream 是一个基于 Go 1.18+ 泛型的流式处理库, 它支持并行处理流中的数据.
+
+## 特性
+
+- [x] 并行流: 保持并行处理完成后流中元素保持原始顺序
+- [x] 流水线: 组合多个操作以减少元素循环，更早地短路
+- [x] 惰性调用: 中间操作是惰性的
 
 ## 安装
 
 需要安装 Go 1.18+ 版本
 
-```bash
-$ go get github.com/xyctruth/stream
-```
-
-在代码中导入它
-
 ```go
 import "github.com/xyctruth/stream"
 ```
-
-## 特性
-
-- [x] 并行流
-- [ ] 流水线，组合多个操作以减少元素循环，更早地短路
-- [ ] 惰性调用，中间操作是惰性的
 
 ## 入门
 
@@ -37,12 +31,6 @@ s := stream.NewSliceByOrdered([]string{"d", "a", "b", "c", "a"}).
     Sort().
     Distinct().
     ToSlice()
-
-// 需要转换切片元素的类型
-s := stream.NewSliceByMapping[int, string, string]([]int{1, 2, 3, 4, 5}).
-    Filter(func(v int) bool { return v >3 }).
-    Map(func(v int) string { return "mapping_" + strconv.Itoa(v) }).
-    Reduce(func(r string, v string) string { return r + v })
 ```
 
 ## 类型约束
@@ -50,31 +38,18 @@ s := stream.NewSliceByMapping[int, string, string]([]int{1, 2, 3, 4, 5}).
 `any` 接受任何类型的元素, 所以不能使用 `==` `!=` `>` `<` 比较元素, 导致你不能使用 Sort(), Find()...等函数 ,但是你可以使用 SortFunc(fn), FindFunc(fn)... 代替
 
 ```go
-type SliceStream[E any] struct {
-    slice      []E
-}
-
 stream.NewSlice([]int{1, 2, 3, 7, 1})
 ```
 
 `comparable` 接收的类型可以使用 `==` `!=` 比较元素, 但仍然不能使用 `>` `<` 比较元素, 因此你不能使用 Sort(), Min()...等函数 ,但是你可以使用 SortFunc(fn), MinFunc()... 代替
 
 ```go
-type SliceComparableStream[E comparable] struct {
-    SliceStream[E]
-}
-
-
 stream.NewSliceByComparable([]int{1, 2, 3, 7, 1})
 ```
 
 `constraints.Ordered` 接收的类型可以使用 `==` `!=` `>` `<`, 所以可以使用所有的函数
 
 ```go
-type SliceOrderedStream[E constraints.Ordered] struct {
-    SliceComparableStream[E]
-}
-
 stream.NewSliceByOrdered([]int{1, 2, 3, 7, 1})
 ```
 
