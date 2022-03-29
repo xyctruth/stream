@@ -5,55 +5,66 @@ import (
 	"testing"
 )
 
-func TestPipelines(t *testing.T) {
+func TestPipelineStages(t *testing.T) {
+	p := &Pipe[int]{
+		source: []int{1, 2, 3},
+	}
+
+	p.AddStage(func(index int, e int) (isReturn bool, isComplete bool, ret int) {
+		return true, false, e * 10
+	})
+
+	isReturn, isComplete, ret := p.stages(0, 1)
+	assert.Equal(t, true, isReturn)
+	assert.Equal(t, false, isComplete)
+	assert.Equal(t, ret, 10)
+
+	p.AddStage(func(index int, e int) (isReturn bool, isComplete bool, ret int) {
+		return true, false, e + 10
+	})
+	isReturn, isComplete, ret = p.stages(0, 1)
+	assert.Equal(t, true, isReturn)
+	assert.Equal(t, false, isComplete)
+	assert.Equal(t, ret, 20)
+
+	p.Run()
+	assert.Equal(t, p.source, []int{20, 30, 40})
+	assert.Nil(t, p.stages)
+}
+
+func TestPipeByTermination(t *testing.T) {
 	tests := []struct {
-		name      string
-		input     []string
-		predicate func(v string) bool
-		mapper    func(v string) string
-		want      []string
+		name       string
+		goroutines int
 	}{
 		{
-			name:      "case",
-			input:     []string{"a", "b", "c"},
-			predicate: func(v string) bool { return v != "b" },
-			mapper: func(v string) string {
-				return v + "1"
-			},
-			want: []string{"a1", "c1"},
+			name:       "case",
+			goroutines: 0,
 		},
 		{
-			name:      "case",
-			input:     []string{"a", "b"},
-			predicate: func(v string) bool { return v == "c" },
-			want:      []string{},
-		},
-		{
-			name:      "nil",
-			input:     nil,
-			predicate: nil,
-			want:      nil,
+			name:       "case",
+			goroutines: 10,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := NewSlice(tt.input).Filter(tt.predicate).Map(tt.mapper).ToSlice()
-			assert.Equal(t, tt.want, got)
+			p := &Pipe[int]{
+				source:     []int{1, 2, 3},
+				goroutines: tt.goroutines,
+			}
+			p.AddStage(func(index int, e int) (isReturn bool, isComplete bool, ret int) {
+				return true, false, e * 10
+			})
 
-			got = NewSlice(tt.input).Parallel(2).Filter(tt.predicate).Map(tt.mapper).ToSlice()
-			assert.Equal(t, tt.want, got)
+			rets := PipeByTermination(p, func(index int, e int) (isReturn bool, isComplete bool, ret int) {
+				if index == 1 {
+					return true, true, e * 10
+				}
+				return false, false, e * 10
+			})
 
-			got = NewSliceByComparable(tt.input).Filter(tt.predicate).Map(tt.mapper).ToSlice()
-			assert.Equal(t, tt.want, got)
-
-			got = NewSliceByComparable(tt.input).Parallel(2).Filter(tt.predicate).Map(tt.mapper).ToSlice()
-			assert.Equal(t, tt.want, got)
-
-			got = NewSliceByOrdered(tt.input).Filter(tt.predicate).Map(tt.mapper).ToSlice()
-			assert.Equal(t, tt.want, got)
-
-			got = NewSliceByOrdered(tt.input).Parallel(2).Filter(tt.predicate).Map(tt.mapper).ToSlice()
-			assert.Equal(t, tt.want, got)
+			assert.Equal(t, []int{200}, rets)
+			assert.Nil(t, p.stages)
 		})
 	}
 }

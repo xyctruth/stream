@@ -11,25 +11,25 @@ type SliceOrderedStream[E constraints.Ordered] struct {
 }
 
 // NewSliceByOrdered new stream instance, generics constraints based on constraints.Ordered
-func NewSliceByOrdered[E constraints.Ordered](v []E) SliceOrderedStream[E] {
-	return SliceOrderedStream[E]{SliceComparableStream: NewSliceByComparable(v)}
+func NewSliceByOrdered[E constraints.Ordered](source []E) SliceOrderedStream[E] {
+	return SliceOrderedStream[E]{SliceComparableStream: NewSliceByComparable(source)}
 }
 
 // IsSorted reports whether x is sorted in ascending order.
 // Compare according to the constraints.Ordered.
-// If the slice is empty or nil then true is returned.
+// If the source is empty or nil then true is returned.
 func (stream SliceOrderedStream[E]) IsSorted() bool {
 	stream.evaluation()
-	return slices.IsSorted(stream.slice)
+	return slices.IsSorted(stream.source)
 }
 
 // Max Returns the maximum element of this stream.
 // Compare according to the constraints.Ordered.
-// If the slice is empty or nil then E Type default value is returned.
+// If the source is empty or nil then E Type default value is returned.
 func (stream SliceOrderedStream[E]) Max() E {
 	stream.evaluation()
 	var max E
-	for i, v := range stream.slice {
+	for i, v := range stream.source {
 		if v > max || i == 0 {
 			max = v
 		}
@@ -39,11 +39,11 @@ func (stream SliceOrderedStream[E]) Max() E {
 
 // Min Returns the minimum element of this stream.
 // Compare according to the constraints.Ordered.
-// If the slice is empty or nil then E Type default value is returned.
+// If the source is empty or nil then E Type default value is returned.
 func (stream SliceOrderedStream[E]) Min() E {
 	stream.evaluation()
 	var min E
-	for i, v := range stream.slice {
+	for i, v := range stream.source {
 		if v < min || i == 0 {
 			min = v
 		}
@@ -55,7 +55,7 @@ func (stream SliceOrderedStream[E]) Min() E {
 // Sorted according to slices.Sort.
 func (stream SliceOrderedStream[E]) Sort() SliceOrderedStream[E] {
 	stream.evaluation()
-	slices.Sort(stream.slice)
+	slices.Sort(stream.source)
 	return stream
 }
 

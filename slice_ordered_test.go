@@ -160,7 +160,7 @@ func TestSliceOrderedSort(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := NewSliceByOrdered(tt.input).Sort()
-			assert.Equal(t, tt.want, got.slice)
+			assert.Equal(t, tt.want, got.source)
 		})
 	}
 }

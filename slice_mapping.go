@@ -1,6 +1,6 @@
 package stream
 
-// SliceMappingStream  Need to convert the type of slice elements.
+// SliceMappingStream  Need to convert the type of source elements.
 // - E elements type
 // - MapE map elements type
 // - ReduceE reduce elements type
@@ -8,39 +8,39 @@ type SliceMappingStream[E any, MapE any, ReduceE any] struct {
 	SliceStream[E]
 }
 
-// NewSliceByMapping new stream instance, Need to convert the type of slice elements.
+// NewSliceByMapping new stream instance, Need to convert the type of source elements.
 //
 // - E elements type
 // - MapE map elements type
 // - ReduceE reduce elements type
-func NewSliceByMapping[E any, MapE any, ReduceE any](v []E) SliceMappingStream[E, MapE, ReduceE] {
-	return SliceMappingStream[E, MapE, ReduceE]{SliceStream: NewSlice(v)}
+func NewSliceByMapping[E any, MapE any, ReduceE any](source []E) SliceMappingStream[E, MapE, ReduceE] {
+	return SliceMappingStream[E, MapE, ReduceE]{SliceStream: NewSlice(source)}
 }
 
 // Map Returns a stream consisting of the results of applying the given function to the elements of this stream.
 //
 // Support Parallel.
 func (stream SliceMappingStream[E, MapE, ReduceE]) Map(mapper func(E) MapE) SliceMappingStream[MapE, MapE, ReduceE] {
-	if stream.slice == nil {
+	if stream.source == nil {
 		return NewSliceByMapping[MapE, MapE, ReduceE](nil)
 	}
 
-	handler := func(index int, v E) (isReturn bool, isComplete bool, ret MapE) {
+	termination := func(index int, v E) (isReturn bool, isComplete bool, ret MapE) {
 		return true, false, mapper(v)
 	}
 	return NewSliceByMapping[MapE, MapE, ReduceE](
-		PipelineTermination[E, MapE](stream.slice, stream.goroutines, stream.intermediate, handler, ParallelAllType),
+		PipeByTermination[E, MapE](stream.Pipe, termination),
 	)
 }
 
-// Reduce Returns a slice consisting of the elements of this stream.
+// Reduce Returns a source consisting of the elements of this stream.
 func (stream SliceMappingStream[E, MapE, ReduceE]) Reduce(accumulator func(ReduceE, E) ReduceE) (result ReduceE) {
 	stream.evaluation()
-	if len(stream.slice) == 0 {
+	if len(stream.source) == 0 {
 		return result
 	}
 
-	for _, v := range stream.slice {
+	for _, v := range stream.source {
 		result = accumulator(result, v)
 	}
 	return result

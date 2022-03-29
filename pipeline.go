@@ -1,84 +1,48 @@
 package stream
 
-func PipelineIntermediate[E any](slice []E, goroutines int, intermediate IntermediateStage[E]) []E {
-	if slice == nil || intermediate == nil {
-		return slice
+type Stage[E any, R any] func(index int, e E) (isReturn bool, isComplete bool, ret R)
+
+type Pipe[E any] struct {
+	source     []E
+	goroutines int
+	stages     Stage[E, E]
+}
+
+func (pipe *Pipe[E]) Run() {
+	if pipe.source == nil || pipe.stages == nil {
+		return
+	}
+	defer func() {
+		pipe.stages = nil
+	}()
+
+	if pipe.goroutines > 1 {
+		pipe.source = Parallel[E, E](
+			pipe.goroutines,
+			pipe.source,
+			pipe.stages)
+		return
 	}
 
-	if goroutines > 1 {
-		handler := func(i int, v E) (isReturn bool, ret E) {
-			return intermediate(i, v)
-		}
-		newSlice := ParallelProcess[E, E](
-			goroutines,
-			slice,
-			handler,
-			ParallelAllType)
-		return newSlice
-	}
-
-	newSlice := make([]E, 0, len(slice))
-	for i, v := range slice {
-		isReturn, ret := intermediate(i, v)
+	newSlice := make([]E, 0, len(pipe.source))
+	for i, v := range pipe.source {
+		isReturn, _, ret := pipe.stages(i, v)
 		if !isReturn {
 			continue
 		}
 		newSlice = append(newSlice, ret)
 	}
-	return newSlice
+	pipe.source = newSlice
 }
 
-func PipelineTermination[E any, R any](slice []E, goroutines int, intermediate IntermediateStage[E], termination TerminationStage[E, R], parallelType ParallelType) []R {
-	if goroutines > 1 {
-		handler := func(i int, v E) (isReturn bool, ret R) {
-			if intermediate != nil {
-				isReturn, v = intermediate(i, v)
-				if !isReturn {
-					return
-				}
-			}
-			isReturn, _, ret = termination(i, v)
-			return
-		}
-		return ParallelProcess[E, R](
-			goroutines,
-			slice,
-			handler,
-			parallelType)
+func (pipe *Pipe[E]) AddStage(s2 Stage[E, E]) {
+	if pipe.stages == nil {
+		pipe.stages = s2
+		return
 	}
-
-	handler := func(i int, v E) (isReturn bool, isComplete bool, ret R) {
-		if intermediate != nil {
-			isReturn, v = intermediate(i, v)
-			if !isReturn {
-				return
-			}
-		}
-		return termination(i, v)
-	}
-
-	newSlice := make([]R, 0, len(slice))
-	for i, v := range slice {
-		isReturn, isComplete, ret := handler(i, v)
-		if !isReturn {
-			continue
-		}
-		newSlice = append(newSlice, ret)
-		if isComplete {
-			return newSlice
-		}
-	}
-	return newSlice
-}
-
-type IntermediateStage[E any] func(index int, e E) (bool, E)
-
-func (s1 IntermediateStage[E]) Wrap(s2 IntermediateStage[E]) IntermediateStage[E] {
-	if s1 == nil {
-		return s2
-	}
-	return func(index int, e E) (isReturn bool, ret E) {
-		isReturn, ret = s1(index, e)
+	s1 := pipe.stages
+	pipe.stages = func(index int, e E) (isReturn bool, isComplete bool, ret E) {
+		isReturn, _, ret = s1(index, e)
 		if !isReturn {
 			return
 		}
@@ -86,4 +50,46 @@ func (s1 IntermediateStage[E]) Wrap(s2 IntermediateStage[E]) IntermediateStage[E
 	}
 }
 
-type TerminationStage[E any, R any] func(index int, e E) (isReturn bool, isComplete bool, ret R)
+func PipeByTermination[E any, R any](pipe *Pipe[E], terminationStage Stage[E, R]) []R {
+	if pipe.source == nil {
+		return nil
+	}
+
+	defer func() {
+		pipe.stages = nil
+	}()
+
+	var stages Stage[E, R]
+	if pipe.stages == nil {
+		stages = terminationStage
+	} else {
+		stages = func(i int, v E) (isReturn bool, isComplete bool, ret R) {
+			isReturn, _, v = pipe.stages(i, v)
+			if !isReturn {
+				return
+			}
+			isReturn, isComplete, ret = terminationStage(i, v)
+			return
+		}
+	}
+
+	if pipe.goroutines > 1 {
+		return Parallel[E, R](
+			pipe.goroutines,
+			pipe.source,
+			stages)
+	}
+
+	newSlice := make([]R, 0, len(pipe.source))
+	for i, v := range pipe.source {
+		isReturn, isComplete, ret := stages(i, v)
+		if !isReturn {
+			continue
+		}
+		newSlice = append(newSlice, ret)
+		if isComplete {
+			break
+		}
+	}
+	return newSlice
+}

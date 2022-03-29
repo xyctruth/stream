@@ -51,8 +51,12 @@ func TestSliceMapping(t *testing.T) {
 
 		})
 	}
+}
 
-	tests = []struct {
+func TestParallelSliceMapping(t *testing.T) {
+	mapper := func(v int) string { return "mapping_" + strconv.Itoa(v) }
+	reducer := func(r string, s string) string { return r + s + "/" }
+	tests := []struct {
 		name  string
 		input []int
 		want  []string

@@ -1,51 +1,56 @@
 package stream
 
-// ParallelHandlerFunc Parallel processing Handler
-//
-// - E elements type
-// - R result type
-type ParallelHandlerFunc[E any, R any] func(index int, elem E) (isReturn bool, result R)
-
-// Parallel Provides parallel processing capabilities.
-//
-// - E elements type
-// - R result type
-//
-// ParallelFirst parallel processing ends as soon as the first return value is obtained.
-//
-// ParallelAll All elements need to be processed in parallel, all return values are obtained, and then the parallel is ended.
-//
-// ParallelAction All elements need to be processed in parallel, no return value required
-type Parallel[E any, R any] interface {
-	Process(goroutines int, slice []E, handler ParallelHandlerFunc[E, R]) []R
-}
-
-type ParallelType int
-
-const (
-	ParallelFirstType ParallelType = iota
-	ParallelAllType
-	ParallelActionType
-)
-
-func ParallelProcess[E any, R any](
+func Parallel[E any, R any](
 	goroutines int,
 	slice []E,
-	handler ParallelHandlerFunc[E, R],
-	parallelType ParallelType) []R {
+	handler func(index int, elem E) (isReturn bool, isComplete bool, result R)) []R {
 
-	var p Parallel[E, R]
+	partitions := partition(slice, goroutines)
+	resultChs := make([]chan []R, len(partitions))
 
-	switch parallelType {
-	case ParallelFirstType:
-		p = ParallelFirst[E, R]{}
-	case ParallelAllType:
-		p = ParallelAll[E, R]{}
-	case ParallelActionType:
-		p = ParallelAction[E, R]{}
-
+	for i, pa := range partitions {
+		resultChs[i] = make(chan []R)
+		go parallelDo(slice, handler, resultChs[i], pa)
 	}
-	return p.Process(goroutines, slice, handler)
+
+	result := parallelResulted(resultChs, len(slice))
+	return result
+}
+
+func parallelDo[E any, R any](
+	slice []E,
+	handler func(index int, elem E) (isReturn bool, isComplete bool, result R),
+	resultCh chan []R,
+	pa part) {
+
+	defer close(resultCh)
+	ret := make([]R, 0, pa.high-pa.low)
+
+	for i := pa.low; i < pa.high; i++ {
+		isReturn, isComplete, r := handler(i, slice[i])
+		if !isReturn {
+			continue
+		}
+		ret = append(ret, r)
+		if isComplete {
+			break
+		}
+	}
+
+	if len(ret) > 0 {
+		resultCh <- ret
+	}
+	return
+}
+
+func parallelResulted[R any](resultChs []chan []R, cap int) []R {
+	results := make([]R, 0, cap)
+	for _, resultCh := range resultChs {
+		for result := range resultCh {
+			results = append(results, result...)
+		}
+	}
+	return results
 }
 
 // part  Uniform slices
@@ -55,7 +60,7 @@ type part struct {
 	high int //excludes index
 }
 
-// partition Given a specified slice, evenly part according to the slice.
+// partition Given a specified source, evenly part according to the source.
 func partition[E any](slice []E, goroutines int) []part {
 	l := len(slice)
 	if l == 0 {
