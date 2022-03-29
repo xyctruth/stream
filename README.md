@@ -5,12 +5,13 @@
 
 > [English](./README.md) / [中文](./README-ZH.md)
 
-Stream is a Stream library based on Go 1.18+ Generics. It supports parallel processing of data in the stream.
+`Stream` is a stream processing library based on Go 1.18+ Generics. It supports parallel processing of data in the stream.
+
 ## Features
 
-- [x] Parallel Stream: Keep the original order of elements in the stream
-- [x] Pipeline: combine multiple operations to reduce element loops, short-circuiting earlier
-- [x] Lazy Invocation: intermediate operations are lazy
+-  `Parallel` Stream: Parallel processing of data in the stream, keeping the original order of the elements in the stream
+-  `Pipeline`: combine multiple operations to reduce element loops, short-circuiting earlier
+-  `Lazy Invocation`: intermediate operations are lazy
 
 ## Installation
 

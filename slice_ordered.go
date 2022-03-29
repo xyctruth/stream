@@ -100,9 +100,3 @@ func (stream SliceOrderedStream[E]) SortFunc(less func(a, b E) bool) SliceOrdere
 	stream.SliceStream = stream.SliceStream.SortFunc(less)
 	return stream
 }
-
-// SortStableFunc See: SliceStream.SortStableFunc
-func (stream SliceOrderedStream[E]) SortStableFunc(less func(a, b E) bool) SliceOrderedStream[E] {
-	stream.SliceStream = stream.SliceStream.SortStableFunc(less)
-	return stream
-}

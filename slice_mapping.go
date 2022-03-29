@@ -75,9 +75,3 @@ func (stream SliceMappingStream[E, MapE, ReduceE]) SortFunc(less func(a, b E) bo
 	stream.SliceStream = stream.SliceStream.SortFunc(less)
 	return stream
 }
-
-// SortStableFunc See: SliceStream.SortStableFunc
-func (stream SliceMappingStream[E, MapE, ReduceE]) SortStableFunc(less func(a, b E) bool) SliceMappingStream[E, MapE, ReduceE] {
-	stream.SliceStream = stream.SliceStream.SortStableFunc(less)
-	return stream
-}

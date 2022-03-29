@@ -1019,55 +1019,6 @@ func TestSliceSortFunc(t *testing.T) {
 	}
 }
 
-func TestSliceSortStableFunc(t *testing.T) {
-	tests := []struct {
-		name  string
-		input []int
-		less  func(a, b int) bool
-		want  []int
-	}{
-		{
-			name:  "case",
-			input: []int{1, 2, 1, 5},
-			less:  func(a, b int) bool { return a > b },
-			want:  []int{5, 2, 1, 1},
-		},
-		{
-			name:  "case",
-			input: []int{1, 2, 1, 5},
-			less:  func(a, b int) bool { return a < b },
-			want:  []int{1, 1, 2, 5},
-		},
-		{
-			name:  "empty",
-			input: []int{},
-			less:  func(a, b int) bool { return a > b },
-			want:  []int{},
-		},
-		{
-			name:  "nil",
-			input: nil,
-			less:  func(a, b int) bool { return a > b },
-			want:  nil,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := NewSlice(tt.input).SortStableFunc(tt.less).ToSlice()
-			assert.Equal(t, tt.want, got)
-
-			got = NewSliceByComparable(tt.input).SortStableFunc(tt.less).ToSlice()
-			assert.Equal(t, tt.want, got)
-
-			got = NewSliceByOrdered(tt.input).SortStableFunc(tt.less).ToSlice()
-			assert.Equal(t, tt.want, got)
-
-			got = NewSliceByMapping[int, int, int](tt.input).SortStableFunc(tt.less).ToSlice()
-			assert.Equal(t, tt.want, got)
-		})
-	}
-}
-
 func TestSlicePipelines(t *testing.T) {
 	tests := []struct {
 		name      string

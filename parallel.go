@@ -1,25 +1,25 @@
 package stream
 
-func Parallel[E any, R any](
-	goroutines int,
-	slice []E,
-	handler func(index int, elem E) (isReturn bool, isComplete bool, result R)) []R {
+type Parallel[E any, R any] struct {
+	goroutines int
+	slice      []E
+	handler    func(index int, elem E) (isReturn bool, isComplete bool, result R)
+}
 
-	partitions := partition(slice, goroutines)
+func (p Parallel[E, R]) Run() []R {
+	partitions := partition(p.slice, p.goroutines)
 	resultChs := make([]chan []R, len(partitions))
 
 	for i, pa := range partitions {
 		resultChs[i] = make(chan []R)
-		go parallelDo(slice, handler, resultChs[i], pa)
+		go p.do(resultChs[i], pa)
 	}
 
-	result := parallelResulted(resultChs, len(slice))
+	result := p.resulted(resultChs, len(p.slice))
 	return result
 }
 
-func parallelDo[E any, R any](
-	slice []E,
-	handler func(index int, elem E) (isReturn bool, isComplete bool, result R),
+func (p Parallel[E, R]) do(
 	resultCh chan []R,
 	pa part) {
 
@@ -27,7 +27,7 @@ func parallelDo[E any, R any](
 	ret := make([]R, 0, pa.high-pa.low)
 
 	for i := pa.low; i < pa.high; i++ {
-		isReturn, isComplete, r := handler(i, slice[i])
+		isReturn, isComplete, r := p.handler(i, p.slice[i])
 		if !isReturn {
 			continue
 		}
@@ -43,7 +43,7 @@ func parallelDo[E any, R any](
 	return
 }
 
-func parallelResulted[R any](resultChs []chan []R, cap int) []R {
+func (p Parallel[E, R]) resulted(resultChs []chan []R, cap int) []R {
 	results := make([]R, 0, cap)
 	for _, resultCh := range resultChs {
 		for result := range resultCh {

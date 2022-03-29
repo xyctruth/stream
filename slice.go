@@ -98,7 +98,7 @@ func (stream SliceStream[E]) ForEach(action func(int, E)) SliceStream[E] {
 		action(index, v)
 		return true, false, v
 	}
-	stream.Pipe.AddStage(stage)
+	stream.AddStage(stage)
 	stream.evaluation()
 	return stream
 }
@@ -136,7 +136,7 @@ func (stream SliceStream[E]) Filter(predicate func(E) bool) SliceStream[E] {
 	stage := func(index int, e E) (isReturn bool, isComplete bool, ret E) {
 		return predicate(e), false, e
 	}
-	stream.Pipe.AddStage(stage)
+	stream.AddStage(stage)
 	return stream
 }
 
@@ -192,7 +192,7 @@ func (stream SliceStream[E]) Map(mapper func(E) E) SliceStream[E] {
 	stage := func(index int, v E) (isReturn bool, isComplete bool, ret E) {
 		return true, false, mapper(v)
 	}
-	stream.Pipe.AddStage(stage)
+	stream.AddStage(stage)
 	return stream
 }
 
@@ -240,14 +240,6 @@ func (stream SliceStream[E]) Reduce(accumulator func(E, E) E) (result E) {
 func (stream SliceStream[E]) SortFunc(less func(a, b E) bool) SliceStream[E] {
 	stream.evaluation()
 	slices.SortFunc(stream.source, less)
-	return stream
-}
-
-// SortStableFunc Returns a sorted stream consisting of the elements of this stream.
-// Sorted according to slices.SortStableFunc.
-func (stream SliceStream[E]) SortStableFunc(less func(a, b E) bool) SliceStream[E] {
-	stream.evaluation()
-	slices.SortStableFunc(stream.source, less)
 	return stream
 }
 

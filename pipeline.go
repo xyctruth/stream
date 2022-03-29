@@ -8,33 +8,6 @@ type Pipe[E any] struct {
 	stages     Stage[E, E]
 }
 
-func (pipe *Pipe[E]) Run() {
-	if pipe.source == nil || pipe.stages == nil {
-		return
-	}
-	defer func() {
-		pipe.stages = nil
-	}()
-
-	if pipe.goroutines > 1 {
-		pipe.source = Parallel[E, E](
-			pipe.goroutines,
-			pipe.source,
-			pipe.stages)
-		return
-	}
-
-	newSlice := make([]E, 0, len(pipe.source))
-	for i, v := range pipe.source {
-		isReturn, _, ret := pipe.stages(i, v)
-		if !isReturn {
-			continue
-		}
-		newSlice = append(newSlice, ret)
-	}
-	pipe.source = newSlice
-}
-
 func (pipe *Pipe[E]) AddStage(s2 Stage[E, E]) {
 	if pipe.stages == nil {
 		pipe.stages = s2
@@ -48,6 +21,33 @@ func (pipe *Pipe[E]) AddStage(s2 Stage[E, E]) {
 		}
 		return s2(index, ret)
 	}
+}
+
+func (pipe *Pipe[E]) Run() {
+	if pipe.source == nil || pipe.stages == nil {
+		return
+	}
+	defer func() {
+		pipe.stages = nil
+	}()
+
+	if pipe.goroutines > 1 {
+		pipe.source = Parallel[E, E]{
+			pipe.goroutines,
+			pipe.source,
+			pipe.stages}.Run()
+		return
+	}
+
+	newSlice := make([]E, 0, len(pipe.source))
+	for i, v := range pipe.source {
+		isReturn, _, ret := pipe.stages(i, v)
+		if !isReturn {
+			continue
+		}
+		newSlice = append(newSlice, ret)
+	}
+	pipe.source = newSlice
 }
 
 func PipeByTermination[E any, R any](pipe *Pipe[E], terminationStage Stage[E, R]) []R {
@@ -74,10 +74,10 @@ func PipeByTermination[E any, R any](pipe *Pipe[E], terminationStage Stage[E, R]
 	}
 
 	if pipe.goroutines > 1 {
-		return Parallel[E, R](
+		return Parallel[E, R]{
 			pipe.goroutines,
 			pipe.source,
-			stages)
+			stages}.Run()
 	}
 
 	newSlice := make([]R, 0, len(pipe.source))
