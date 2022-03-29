@@ -21,6 +21,12 @@ $ go get github.com/xyctruth/stream
 import "github.com/xyctruth/stream"
 ```
 
+## 特性
+
+- [x] 并行流
+- [ ] 流水线，组合多个操作以减少元素循环，更早地短路
+- [ ] 惰性调用，中间操作是惰性的
+
 ## 入门
 
 ```go
