@@ -2,13 +2,13 @@ package stream
 
 type Stage[E any, R any] func(index int, e E) (isReturn bool, isComplete bool, ret R)
 
-type Pipe[E any] struct {
+type Pipeline[E any] struct {
 	source     []E
 	goroutines int
 	stages     Stage[E, E]
 }
 
-func (pipe *Pipe[E]) AddStage(s2 Stage[E, E]) {
+func (pipe *Pipeline[E]) AddStage(s2 Stage[E, E]) {
 	if pipe.stages == nil {
 		pipe.stages = s2
 		return
@@ -23,34 +23,17 @@ func (pipe *Pipe[E]) AddStage(s2 Stage[E, E]) {
 	}
 }
 
-func (pipe *Pipe[E]) Run() {
+func (pipe *Pipeline[E]) evaluation() {
 	if pipe.source == nil || pipe.stages == nil {
 		return
 	}
 	defer func() {
 		pipe.stages = nil
 	}()
-
-	if pipe.goroutines > 1 {
-		pipe.source = Parallel[E, E]{
-			pipe.goroutines,
-			pipe.source,
-			pipe.stages}.Run()
-		return
-	}
-
-	newSlice := make([]E, 0, len(pipe.source))
-	for i, v := range pipe.source {
-		isReturn, _, ret := pipe.stages(i, v)
-		if !isReturn {
-			continue
-		}
-		newSlice = append(newSlice, ret)
-	}
-	pipe.source = newSlice
+	pipe.source = pipelineRun(pipe.source, pipe.goroutines, pipe.stages)
 }
 
-func PipeByTermination[E any, R any](pipe *Pipe[E], terminationStage Stage[E, R]) []R {
+func pipelineTermination[E any, R any](pipe *Pipeline[E], terminationStage Stage[E, R]) []R {
 	if pipe.source == nil {
 		return nil
 	}
@@ -72,16 +55,16 @@ func PipeByTermination[E any, R any](pipe *Pipe[E], terminationStage Stage[E, R]
 			return
 		}
 	}
+	return pipelineRun(pipe.source, pipe.goroutines, stages)
+}
 
-	if pipe.goroutines > 1 {
-		return Parallel[E, R]{
-			pipe.goroutines,
-			pipe.source,
-			stages}.Run()
+func pipelineRun[E any, R any](source []E, goroutines int, stages Stage[E, R]) []R {
+	if goroutines > 1 {
+		return Parallel[E, R]{goroutines, source, stages}.Run()
 	}
 
-	newSlice := make([]R, 0, len(pipe.source))
-	for i, v := range pipe.source {
+	newSlice := make([]R, 0, len(source))
+	for i, v := range source {
 		isReturn, isComplete, ret := stages(i, v)
 		if !isReturn {
 			continue

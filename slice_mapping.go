@@ -29,7 +29,7 @@ func (stream SliceMappingStream[E, MapE, ReduceE]) Map(mapper func(E) MapE) Slic
 		return true, false, mapper(v)
 	}
 	return NewSliceByMapping[MapE, MapE, ReduceE](
-		PipeByTermination[E, MapE](stream.Pipe, termination),
+		pipelineTermination[E, MapE](stream.Pipeline, termination),
 	)
 }
 

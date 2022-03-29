@@ -6,7 +6,7 @@ import (
 )
 
 func TestPipelineStages(t *testing.T) {
-	p := &Pipe[int]{
+	p := &Pipeline[int]{
 		source: []int{1, 2, 3},
 	}
 
@@ -27,7 +27,7 @@ func TestPipelineStages(t *testing.T) {
 	assert.Equal(t, false, isComplete)
 	assert.Equal(t, ret, 20)
 
-	p.Run()
+	p.evaluation()
 	assert.Equal(t, p.source, []int{20, 30, 40})
 	assert.Nil(t, p.stages)
 }
@@ -48,7 +48,7 @@ func TestPipeByTermination(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			p := &Pipe[int]{
+			p := &Pipeline[int]{
 				source:     []int{1, 2, 3},
 				goroutines: tt.goroutines,
 			}
@@ -56,7 +56,7 @@ func TestPipeByTermination(t *testing.T) {
 				return true, false, e * 10
 			})
 
-			rets := PipeByTermination(p, func(index int, e int) (isReturn bool, isComplete bool, ret int) {
+			rets := pipelineTermination(p, func(index int, e int) (isReturn bool, isComplete bool, ret int) {
 				if index == 1 {
 					return true, true, e * 10
 				}

@@ -6,12 +6,12 @@ import (
 
 // SliceStream Generics constraints based on any
 type SliceStream[E any] struct {
-	*Pipe[E]
+	*Pipeline[E]
 }
 
 // NewSlice new stream instance, generics constraints based on any.
 func NewSlice[E any](source []E) SliceStream[E] {
-	return SliceStream[E]{Pipe: &Pipe[E]{source: source}}
+	return SliceStream[E]{Pipeline: &Pipeline[E]{source: source}}
 }
 
 // Parallel Goroutines > 1 enable parallel, Goroutines <= 1 disable parallel
@@ -249,18 +249,14 @@ func (stream SliceStream[E]) ToSlice() []E {
 	return stream.source
 }
 
-func (stream *SliceStream[E]) evaluation() {
-	stream.Pipe.Run()
-}
-
 func (stream *SliceStream[E]) evaluationBoolTermination(termination Stage[E, bool]) (ret []bool) {
-	ret = PipeByTermination[E, bool](stream.Pipe, termination)
+	ret = pipelineTermination[E, bool](stream.Pipeline, termination)
 	stream.stages = nil
 	return ret
 }
 
 func (stream *SliceStream[E]) evaluationIntTermination(termination Stage[E, int]) (ret []int) {
-	ret = PipeByTermination[E, int](stream.Pipe, termination)
+	ret = pipelineTermination[E, int](stream.Pipeline, termination)
 	stream.stages = nil
 	return ret
 }

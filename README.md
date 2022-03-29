@@ -9,7 +9,7 @@
 
 ## Features
 
--  `Parallel` Stream: Parallel processing of data in the stream, keeping the original order of the elements in the stream
+-  `Parallel`: Parallel processing of data in the stream, keeping the original order of the elements in the stream
 -  `Pipeline`: combine multiple operations to reduce element loops, short-circuiting earlier
 -  `Lazy Invocation`: intermediate operations are lazy
 
