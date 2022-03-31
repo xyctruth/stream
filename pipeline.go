@@ -27,52 +27,55 @@ func (pipe *Pipeline[E]) evaluation() {
 	if pipe.source == nil || pipe.stages == nil {
 		return
 	}
-	defer func() {
-		pipe.stages = nil
-	}()
-	pipe.source = pipelineRun(pipe.source, pipe.goroutines, pipe.stages)
+	pipe.source = pipelineRun(pipe, pipe.stages)
 }
 
-func pipelineTermination[E any, R any](pipe *Pipeline[E], terminationStage Stage[E, R]) []R {
-	if pipe.source == nil {
-		return nil
-	}
+func (pipe *Pipeline[E]) evaluationBool(terminal Stage[E, bool]) (ret []bool) {
+	ret = pipelineRun(pipe, wrapTerminal[E, bool](pipe.stages, terminal))
+	return ret
+}
 
-	defer func() {
-		pipe.stages = nil
-	}()
+func (pipe *Pipeline[E]) evaluationInt(terminal Stage[E, int]) (ret []int) {
+	ret = pipelineRun(pipe, wrapTerminal[E, int](pipe.stages, terminal))
+	return ret
+}
 
+func wrapTerminal[E any, R any](stage Stage[E, E], terminalStage Stage[E, R]) Stage[E, R] {
 	var stages Stage[E, R]
-	if pipe.stages == nil {
-		stages = terminationStage
+	if stage == nil {
+		stages = terminalStage
 	} else {
 		stages = func(i int, v E) (isReturn bool, isComplete bool, ret R) {
-			isReturn, _, v = pipe.stages(i, v)
+			isReturn, _, v = stage(i, v)
 			if !isReturn {
 				return
 			}
-			isReturn, isComplete, ret = terminationStage(i, v)
+			isReturn, isComplete, ret = terminalStage(i, v)
 			return
 		}
 	}
-	return pipelineRun(pipe.source, pipe.goroutines, stages)
+	return stages
 }
 
-func pipelineRun[E any, R any](source []E, goroutines int, stages Stage[E, R]) []R {
-	if goroutines > 1 {
-		return Parallel[E, R]{goroutines, source, stages}.Run()
+func pipelineRun[E any, R any](pipe *Pipeline[E], stages Stage[E, R]) []R {
+	defer func() {
+		pipe.stages = nil
+	}()
+
+	if pipe.goroutines > 1 {
+		return Parallel[E, R]{pipe.goroutines, pipe.source, stages}.Run()
 	}
 
-	newSlice := make([]R, 0, len(source))
-	for i, v := range source {
+	results := make([]R, 0, len(pipe.source))
+	for i, v := range pipe.source {
 		isReturn, isComplete, ret := stages(i, v)
 		if !isReturn {
 			continue
 		}
-		newSlice = append(newSlice, ret)
+		results = append(results, ret)
 		if isComplete {
 			break
 		}
 	}
-	return newSlice
+	return results
 }

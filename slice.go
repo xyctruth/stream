@@ -38,10 +38,10 @@ func (stream SliceStream[E]) At(index int) (elem E) {
 //
 // Support Parallel.
 func (stream SliceStream[E]) AllMatch(predicate func(E) bool) bool {
-	termination := func(index int, v E) (isReturn bool, isComplete bool, ret bool) {
+	terminal := func(index int, v E) (isReturn bool, isComplete bool, ret bool) {
 		return !predicate(v), true, false
 	}
-	results := stream.evaluationBoolTermination(termination)
+	results := stream.evaluationBool(terminal)
 	if len(results) > 0 {
 		return results[0]
 	}
@@ -53,10 +53,10 @@ func (stream SliceStream[E]) AllMatch(predicate func(E) bool) bool {
 //
 // Support Parallel.
 func (stream SliceStream[E]) AnyMatch(predicate func(E) bool) bool {
-	termination := func(index int, v E) (isReturn bool, isComplete bool, ret bool) {
+	terminal := func(index int, v E) (isReturn bool, isComplete bool, ret bool) {
 		return predicate(v), true, true
 	}
-	results := stream.evaluationBoolTermination(termination)
+	results := stream.evaluationBool(terminal)
 	if len(results) > 0 {
 		return results[0]
 	}
@@ -119,10 +119,10 @@ func (stream SliceStream[E]) First() (elem E) {
 // Support Parallel.
 // Parallel side effect is that the element found may not be the first to appear
 func (stream SliceStream[E]) FindFunc(predicate func(E) bool) int {
-	stage := func(index int, v E) (isReturn bool, isComplete bool, ret int) {
+	terminal := func(index int, v E) (isReturn bool, isComplete bool, ret int) {
 		return predicate(v), true, index
 	}
-	results := stream.evaluationIntTermination(stage)
+	results := stream.evaluationInt(terminal)
 	if len(results) > 0 {
 		return results[0]
 	}
@@ -185,10 +185,12 @@ func (stream SliceStream[E]) Limit(maxSize int) SliceStream[E] {
 	return stream
 }
 
+type MapperFunc[E any] func(E) E
+
 // Map Returns a stream consisting of the results of applying the given function to the elements of this stream.
 //
 // Support Parallel.
-func (stream SliceStream[E]) Map(mapper func(E) E) SliceStream[E] {
+func (stream SliceStream[E]) Map(mapper MapperFunc[E]) SliceStream[E] {
 	stage := func(index int, v E) (isReturn bool, isComplete bool, ret E) {
 		return true, false, mapper(v)
 	}
@@ -247,16 +249,4 @@ func (stream SliceStream[E]) SortFunc(less func(a, b E) bool) SliceStream[E] {
 func (stream SliceStream[E]) ToSlice() []E {
 	stream.evaluation()
 	return stream.source
-}
-
-func (stream *SliceStream[E]) evaluationBoolTermination(termination Stage[E, bool]) (ret []bool) {
-	ret = pipelineTermination[E, bool](stream.Pipeline, termination)
-	stream.stages = nil
-	return ret
-}
-
-func (stream *SliceStream[E]) evaluationIntTermination(termination Stage[E, int]) (ret []int) {
-	ret = pipelineTermination[E, int](stream.Pipeline, termination)
-	stream.stages = nil
-	return ret
 }

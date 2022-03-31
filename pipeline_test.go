@@ -56,13 +56,13 @@ func TestPipeByTermination(t *testing.T) {
 				return true, false, e * 10
 			})
 
-			rets := pipelineTermination(p, func(index int, e int) (isReturn bool, isComplete bool, ret int) {
+			stages := wrapTerminal(p.stages, func(index int, e int) (isReturn bool, isComplete bool, ret int) {
 				if index == 1 {
 					return true, true, e * 10
 				}
 				return false, false, e * 10
 			})
-
+			rets := pipelineRun(p, stages)
 			assert.Equal(t, []int{200}, rets)
 			assert.Nil(t, p.stages)
 		})

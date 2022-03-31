@@ -5,68 +5,73 @@ import (
 	"testing"
 )
 
-func BenchmarkPipeline(b *testing.B) {
+func BenchmarkShortCircuiting(b *testing.B) {
 	tests := []struct {
-		name       string
-		goroutines int
-		action     func(int, int)
+		name  string
+		count int
 	}{
-		{name: "no Parallel", goroutines: 0},
-		//{name: "Goroutines", Goroutines: 2},
-		//{name: "Goroutines", Goroutines: 4},
-		//{name: "Goroutines", Goroutines: 6},
-		//{name: "Goroutines", Goroutines: 8},
-		//{name: "Goroutines", Goroutines: 10},
+		{count: 100},
+		{count: 200},
+		{count: 300},
+		{count: 400},
+		{count: 500},
+		{count: 1000},
+		{count: 2000},
 	}
-	s := newArray(100)
-
 	for _, tt := range tests {
-		b.Run(fmt.Sprintf("%s(%d)", tt.name, tt.goroutines), func(b *testing.B) {
+		b.Run(fmt.Sprintf("%s(%d)", "count:", tt.count), func(b *testing.B) {
+			s := newArray(tt.count)
+			s[0] = 101
 			b.ResetTimer()
+
 			for n := 0; n < b.N; n++ {
-				_ = NewSlice(s).Parallel(tt.goroutines).
-					Filter(func(v int) bool {
-						return v > 100
+				_ = NewSlice(s).
+					Filter(func(v int) bool { return true }).
+					Map(func(v int) int {
+						return v
 					}).
-					ToSlice()
+					AllMatch(func(v int) bool { return v < 100 })
 			}
 		})
 	}
-
 }
 
-func BenchmarkNativeFilter(b *testing.B) {
+var funcVal = mapperFunc
+
+func mapperFunc(v int) int { return v * 2 }
+
+// TODO optimize func variable 3.287 ns/op, other（normal，anonymous） 1.553 ns/op
+func BenchmarkPipelineFuncVariable(b *testing.B) {
 	tests := []struct {
 		name       string
 		goroutines int
-		action     func(int, int)
+		stage      func(index int, e int) (isReturn bool, isComplete bool, ret int)
 	}{
-		{name: "no Parallel", goroutines: 0},
+		{
+			name: "variable func",
+			stage: func(index int, e int) (isReturn bool, isComplete bool, ret int) {
+				return true, false, funcVal(e)
+			},
+		},
+		{
+			name: "normal func",
+			stage: func(index int, e int) (isReturn bool, isComplete bool, ret int) {
+				return true, false, mapperFunc(e)
+			},
+		},
+		{
+			name: "anonymous func",
+			stage: func(index int, e int) (isReturn bool, isComplete bool, ret int) {
+				return true, false, func(v int) int { return v * 2 }(e)
+			},
+		},
 	}
-	s := newArray(100)
-
 	for _, tt := range tests {
 		b.Run(fmt.Sprintf("%s(%d)", tt.name, tt.goroutines), func(b *testing.B) {
 			b.ResetTimer()
 			for n := 0; n < b.N; n++ {
-				_ = Filter[int](s, func(v int) bool {
-					return v > 100
-				})
+				tt.stage(0, 0)
 			}
 		})
 	}
-
-}
-
-func Filter[E any](s []E, predicate func(E) bool) []E {
-	clone := make([]E, len(s))
-	copy(clone, s)
-
-	newSlice := make([]E, 0, len(s))
-	for _, v := range clone {
-		if predicate(v) {
-			newSlice = append(newSlice, v)
-		}
-	}
-	return newSlice
 }
