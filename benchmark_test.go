@@ -36,11 +36,11 @@ func BenchmarkShortCircuiting(b *testing.B) {
 	}
 }
 
-var funcVal = mapperFunc
+var funcVariable = mapperFunc
 
 func mapperFunc(v int) int { return v * 2 }
 
-// TODO optimize func variable 3.287 ns/op, other（normal，anonymous） 1.553 ns/op
+// TODO optimize func variable 3.287 ns/op, other 1.553 ns/op
 func BenchmarkPipelineFuncVariable(b *testing.B) {
 	tests := []struct {
 		name       string
@@ -48,9 +48,9 @@ func BenchmarkPipelineFuncVariable(b *testing.B) {
 		stage      func(index int, e int) (isReturn bool, isComplete bool, ret int)
 	}{
 		{
-			name: "variable func",
+			name: "func variable",
 			stage: func(index int, e int) (isReturn bool, isComplete bool, ret int) {
-				return true, false, funcVal(e)
+				return true, false, funcVariable(e)
 			},
 		},
 		{
