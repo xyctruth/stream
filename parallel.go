@@ -1,5 +1,7 @@
 package stream
 
+import "context"
+
 type Parallel[E any, R any] struct {
 	goroutines int
 	slice      []E
@@ -10,9 +12,12 @@ func (p Parallel[E, R]) Run() []R {
 	partitions := partition(p.slice, p.goroutines)
 	resultChs := make([]chan []R, len(partitions))
 
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	for i, pa := range partitions {
 		resultChs[i] = make(chan []R)
-		go p.do(resultChs[i], pa)
+		go p.do(ctx, cancel, resultChs[i], pa)
 	}
 
 	result := p.resulted(resultChs, len(p.slice))
@@ -20,6 +25,8 @@ func (p Parallel[E, R]) Run() []R {
 }
 
 func (p Parallel[E, R]) do(
+	ctx context.Context,
+	cancel context.CancelFunc,
 	resultCh chan []R,
 	pa part) {
 
@@ -27,13 +34,19 @@ func (p Parallel[E, R]) do(
 	ret := make([]R, 0, pa.high-pa.low)
 
 	for i := pa.low; i < pa.high; i++ {
-		isReturn, isComplete, r := p.handler(i, p.slice[i])
-		if !isReturn {
-			continue
-		}
-		ret = append(ret, r)
-		if isComplete {
+		select {
+		case <-ctx.Done():
 			break
+		default:
+			isReturn, isComplete, r := p.handler(i, p.slice[i])
+			if !isReturn {
+				continue
+			}
+			ret = append(ret, r)
+			if isComplete {
+				cancel()
+				break
+			}
 		}
 	}
 

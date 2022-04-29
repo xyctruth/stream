@@ -172,13 +172,13 @@ func TestSliceAnyMatch(t *testing.T) {
 	}{
 		{
 			name:      "case",
-			input:     []int{1, 2},
+			input:     []int{1, 2, 1, 1, 1, 1, 1, 1},
 			predicate: func(v int) bool { return v == 1 },
 			want:      true,
 		},
 		{
 			name:      "case",
-			input:     []int{1, 2},
+			input:     []int{1, 2, 1, 2, 2, 1},
 			predicate: func(v int) bool { return v == 3 },
 			want:      false,
 		},
