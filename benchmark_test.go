@@ -2,35 +2,62 @@ package stream
 
 import (
 	"fmt"
+	"sort"
 	"testing"
+	"time"
 )
 
-func BenchmarkShortCircuiting(b *testing.B) {
+func BenchmarkParallelByCPU(b *testing.B) {
 	tests := []struct {
-		name  string
-		count int
+		name       string
+		goroutines int
+		action     func(int, int)
 	}{
-		{count: 100},
-		{count: 200},
-		{count: 300},
-		{count: 400},
-		{count: 500},
-		{count: 1000},
-		{count: 2000},
+		{name: "no Parallel", goroutines: 0},
+		{name: "Goroutines", goroutines: 2},
+		{name: "Goroutines", goroutines: 4},
+		{name: "Goroutines", goroutines: 6},
+		{name: "Goroutines", goroutines: 8},
+		{name: "Goroutines", goroutines: 10},
 	}
-	for _, tt := range tests {
-		b.Run(fmt.Sprintf("%s(%d)", "count:", tt.count), func(b *testing.B) {
-			s := newArray(tt.count)
-			s[0] = 101
-			b.ResetTimer()
+	s := newArray(100)
 
+	for _, tt := range tests {
+		b.Run(fmt.Sprintf("%s(%d)", tt.name, tt.goroutines), func(b *testing.B) {
+			b.ResetTimer()
 			for n := 0; n < b.N; n++ {
-				_ = NewSlice(s).
-					Filter(func(v int) bool { return true }).
-					Map(func(v int) int {
-						return v
-					}).
-					AllMatch(func(v int) bool { return v < 100 })
+				NewSlice(s).Parallel(tt.goroutines).ForEach(func(i int, v int) {
+					sort.Ints(newArray(1000)) // Simulate time-consuming CPU operations
+				})
+			}
+		})
+	}
+}
+
+func BenchmarkParallelByIO(b *testing.B) {
+	tests := []struct {
+		name       string
+		goroutines int
+		action     func(int, int)
+	}{
+		{name: "no Parallel", goroutines: 0},
+		{name: "Goroutines", goroutines: 2},
+		{name: "Goroutines", goroutines: 4},
+		{name: "Goroutines", goroutines: 6},
+		{name: "Goroutines", goroutines: 8},
+		{name: "Goroutines", goroutines: 10},
+		{name: "Goroutines", goroutines: 50},
+		{name: "Goroutines", goroutines: 100},
+	}
+	s := newArray(100)
+
+	for _, tt := range tests {
+		b.Run(fmt.Sprintf("%s(%d)", tt.name, tt.goroutines), func(b *testing.B) {
+			b.ResetTimer()
+			for n := 0; n < b.N; n++ {
+				NewSlice(s).Parallel(tt.goroutines).ForEach(func(i int, v int) {
+					time.Sleep(time.Millisecond) // Simulate time-consuming IO operations
+				})
 			}
 		})
 	}

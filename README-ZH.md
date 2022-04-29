@@ -108,7 +108,7 @@ s := stream.NewSliceByOrdered([]string{"d", "a", "b", "c", "a"}).
 
 #### CPU 操作
 
-[BenchmarkParallelByCPU](./parallel_test.go)
+[BenchmarkParallelByCPU](./benchmark_test.go)
 
 ```go
 NewSlice(s).Parallel(goroutines).ForEach(func(i int, v int) {
@@ -133,7 +133,7 @@ BenchmarkParallelByCPU/goroutines(10)-6         	    2622	   2306752 ns/op
 
 #### IO 操作
 
-[BenchmarkParallelByIO](./parallel_test.go)
+[BenchmarkParallelByIO](./benchmark_test.go)
 
 ```go
 NewSlice(s).Parallel(goroutines).ForEach(func(i int, v int) {

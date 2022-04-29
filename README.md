@@ -107,7 +107,7 @@ The number of parallel goroutines has different choices for CPU operations and I
 
 #### CPU Operations
 
-[BenchmarkParallelByCPU](./parallel_test.go)
+[BenchmarkParallelByCPU](./benchmark_test.go)
 
 ```go
 NewSlice(s).Parallel(tt.goroutines).ForEach(func(i int, v int) {
@@ -132,7 +132,7 @@ BenchmarkParallelByCPU/goroutines(10)-6         	    2622	   2306752 ns/op
 
 #### IO Operations
 
-[BenchmarkParallelByIO](./parallel_test.go)
+[BenchmarkParallelByIO](./benchmark_test.go)
 
 ```go
 NewSlice(s).Parallel(tt.goroutines).ForEach(func(i int, v int) {
