@@ -15,9 +15,6 @@ jobs:
     runs-on: ${{ matrix.platform }}
 
     steps:
-      - name: Setup Go
-        uses: actions/setup-go@v3
-
       - name: Checkout code
         uses: actions/checkout@v3
 
