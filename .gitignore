@@ -17,5 +17,6 @@
 *.db
 
 .idea
+.DS_Store
 
 cover.html

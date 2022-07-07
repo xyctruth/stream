@@ -41,9 +41,9 @@ func (stream SliceStream[E]) AllMatch(predicate func(E) bool) bool {
 	terminal := func(index int, v E) (isReturn bool, isComplete bool, ret bool) {
 		return !predicate(v), true, false
 	}
-	results := stream.evaluationBool(terminal)
-	if len(results) > 0 {
-		return results[0]
+	result := stream.evaluationBool(terminal)
+	if result != nil {
+		return *result
 	}
 	return true
 }
@@ -56,9 +56,9 @@ func (stream SliceStream[E]) AnyMatch(predicate func(E) bool) bool {
 	terminal := func(index int, v E) (isReturn bool, isComplete bool, ret bool) {
 		return predicate(v), true, true
 	}
-	results := stream.evaluationBool(terminal)
-	if len(results) > 0 {
-		return results[0]
+	result := stream.evaluationBool(terminal)
+	if result != nil {
+		return *result
 	}
 	return false
 }
@@ -122,9 +122,9 @@ func (stream SliceStream[E]) FindFunc(predicate func(E) bool) int {
 	terminal := func(index int, v E) (isReturn bool, isComplete bool, ret int) {
 		return predicate(v), true, index
 	}
-	results := stream.evaluationInt(terminal)
-	if len(results) > 0 {
-		return results[0]
+	result := stream.evaluationInt(terminal)
+	if result != nil {
+		return *result
 	}
 	return -1
 }
