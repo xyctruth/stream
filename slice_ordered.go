@@ -25,30 +25,34 @@ func (stream SliceOrderedStream[E]) IsSorted() bool {
 
 // Max Returns the maximum element of this stream.
 // Compare according to the constraints.Ordered.
-// If the source is empty or nil then E Type default value is returned.
-func (stream SliceOrderedStream[E]) Max() E {
+// If the source is empty or nil then E Type default value is returned. ok return false
+func (stream SliceOrderedStream[E]) Max() (max E, ok bool) {
 	stream.evaluation()
-	var max E
+	if len(stream.source) == 0 {
+		return
+	}
 	for i, v := range stream.source {
 		if v > max || i == 0 {
 			max = v
 		}
 	}
-	return max
+	return max, true
 }
 
 // Min Returns the minimum element of this stream.
 // Compare according to the constraints.Ordered.
-// If the source is empty or nil then E Type default value is returned.
-func (stream SliceOrderedStream[E]) Min() E {
+// If the source is empty or nil then E Type default value is returned. ok return false
+func (stream SliceOrderedStream[E]) Min() (min E, ok bool) {
 	stream.evaluation()
-	var min E
+	if len(stream.source) == 0 {
+		return
+	}
 	for i, v := range stream.source {
 		if v < min || i == 0 {
 			min = v
 		}
 	}
-	return min
+	return min, true
 }
 
 // Sort Returns a sorted stream consisting of the elements of this stream.

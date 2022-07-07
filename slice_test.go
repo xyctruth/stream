@@ -63,47 +63,55 @@ func TestSliceAt(t *testing.T) {
 		input []int
 		index int
 		want  int
+		ok    bool
 	}{
 		{
 			name:  "case",
 			input: []int{1, 2, 3},
 			index: 1,
 			want:  2,
+			ok:    true,
 		},
 		{
 			name:  "case",
 			input: []int{1, 2, 3},
 			index: -1,
 			want:  3,
+			ok:    true,
 		},
 		{
 			name:  "case",
 			input: []int{1, 2, 3},
 			index: 5,
 			want:  0,
+			ok:    false,
 		},
 		{
 			name:  "case",
 			input: []int{1, 2, 3},
 			index: -4,
 			want:  0,
+			ok:    false,
 		},
 		{
 			name:  "empty",
 			input: []int{},
 			index: 0,
 			want:  0,
+			ok:    false,
 		},
 		{
 			name:  "nil",
 			input: nil,
 			want:  0,
+			ok:    false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := NewSlice(tt.input).At(tt.index)
+			got, ok := NewSlice(tt.input).At(tt.index)
 			assert.Equal(t, tt.want, got)
+			assert.Equal(t, tt.ok, ok)
 		})
 	}
 }
@@ -538,27 +546,32 @@ func TestSliceFirst(t *testing.T) {
 		name  string
 		input []int
 		want  int
+		ok    bool
 	}{
 		{
 			name:  "case",
 			input: []int{1, 2, 1},
 			want:  1,
+			ok:    true,
 		},
 		{
 			name:  "empty",
 			input: []int{},
 			want:  0,
+			ok:    false,
 		},
 		{
 			name:  "nil",
 			input: nil,
 			want:  0,
+			ok:    false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := NewSlice(tt.input).First()
+			got, ok := NewSlice(tt.input).First()
 			assert.Equal(t, tt.want, got)
+			assert.Equal(t, tt.ok, ok)
 		})
 	}
 }
@@ -636,6 +649,27 @@ func TestSliceDelete(t *testing.T) {
 			input2: 0,
 			input3: 1,
 			want:   []int{2, 3},
+		},
+		{
+			name:   "case",
+			input1: []int{1, 2, 3},
+			input2: 1,
+			input3: 0,
+			want:   []int{2, 3},
+		},
+		{
+			name:   "case",
+			input1: []int{1, 2, 3},
+			input2: 1,
+			input3: 3,
+			want:   []int{1},
+		},
+		{
+			name:   "case",
+			input1: []int{1, 2, 3},
+			input2: 1,
+			input3: 4,
+			want:   []int{1},
 		},
 		{
 			name:   "empty",
@@ -861,37 +895,44 @@ func TestSliceMaxFunc(t *testing.T) {
 		name  string
 		input []int
 		want  int
+		ok    bool
 	}{
 		{
 			name:  "case",
 			input: []int{1, 2, 1, 5},
 			want:  5,
+			ok:    true,
 		},
 		{
 			name:  "case",
 			input: []int{-1, -2, -1, -5},
 			want:  -1,
+			ok:    true,
 		},
 		{
 			name:  "case",
 			input: []int{10, 2, 1, 5},
 			want:  10,
+			ok:    true,
 		},
 		{
 			name:  "empty",
 			input: []int{},
 			want:  0,
+			ok:    false,
 		},
 		{
 			name:  "nil",
 			input: nil,
 			want:  0,
+			ok:    false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := NewSlice(tt.input).MaxFunc(func(a, b int) bool { return a > b })
+			got, ok := NewSlice(tt.input).MaxFunc(func(a, b int) bool { return a > b })
 			assert.Equal(t, tt.want, got)
+			assert.Equal(t, tt.ok, ok)
 		})
 	}
 }
@@ -901,37 +942,44 @@ func TestSliceMinFunc(t *testing.T) {
 		name  string
 		input []int
 		want  int
+		ok    bool
 	}{
 		{
 			name:  "case",
 			input: []int{1, 2, 1, 5},
 			want:  1,
+			ok:    true,
 		},
 		{
 			name:  "case",
 			input: []int{10, 2, 3, 1},
 			want:  1,
+			ok:    true,
 		},
 		{
 			name:  "case",
 			input: []int{-1, -2, -3, -1},
 			want:  -3,
+			ok:    true,
 		},
 		{
 			name:  "empty",
 			input: []int{},
 			want:  0,
+			ok:    false,
 		},
 		{
 			name:  "nil",
 			input: nil,
 			want:  0,
+			ok:    false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := NewSliceByOrdered(tt.input).MinFunc(func(a, b int) bool { return a < b })
+			got, ok := NewSliceByOrdered(tt.input).MinFunc(func(a, b int) bool { return a < b })
 			assert.Equal(t, tt.want, got)
+			assert.Equal(t, tt.ok, ok)
 		})
 	}
 }

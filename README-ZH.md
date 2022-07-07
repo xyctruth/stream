@@ -1,6 +1,6 @@
 # Stream
 
-[![Build](https://github.com/xyctruth/stream/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/xyctruth/stream/actions/workflows/build.yml)
+[![Build](https://github.com/xyctruth/stream/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/xyctruth/stream/actions/workflows/test.yml)
 [![codecov](https://codecov.io/gh/xyctruth/stream/branch/main/graph/badge.svg?token=ZHMPMQP0CP)](https://codecov.io/gh/xyctruth/stream)
 
 > [English](./README.md) / [中文](./README-ZH.md)

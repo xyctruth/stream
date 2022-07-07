@@ -10,16 +10,15 @@ jobs:
   server-test:
     strategy:
       matrix:
-        platform: [ubuntu-latest, macos-latest]
-        go: ['1.18']
+        platform: [ubuntu-latest]
+        go: ['1.18','1.18.3']
     runs-on: ${{ matrix.platform }}
 
     steps:
       - name: Setup Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.18.0-rc1
-          stable: false
+          go-version: ${{ matrix.go }}
 
       - name: Checkout code
         uses: actions/checkout@v2

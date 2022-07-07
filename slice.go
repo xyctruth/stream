@@ -21,7 +21,8 @@ func (stream SliceStream[E]) Parallel(goroutines int) SliceStream[E] {
 }
 
 // At Returns the element at the given index. Accepts negative integers, which count back from the last item.
-func (stream SliceStream[E]) At(index int) (elem E) {
+// Out of index range ok return false
+func (stream SliceStream[E]) At(index int) (elem E, ok bool) {
 	stream.evaluation()
 	l := len(stream.source)
 	if index < 0 {
@@ -30,7 +31,7 @@ func (stream SliceStream[E]) At(index int) (elem E) {
 	if l == 0 || index < 0 || index >= l {
 		return
 	}
-	return stream.source[index]
+	return stream.source[index], true
 }
 
 // AllMatch Returns whether all elements in the stream match the provided predicate.
@@ -91,9 +92,6 @@ func (stream SliceStream[E]) EqualFunc(dest []E, equal func(E, E) bool) bool {
 // Support Parallel.
 // Parallel side effects are not executed in the original order of stream elements.
 func (stream SliceStream[E]) ForEach(action func(int, E)) SliceStream[E] {
-	if stream.source == nil {
-		return stream
-	}
 	stage := func(index int, v E) (isReturn bool, isComplete bool, result E) {
 		action(index, v)
 		return true, false, v
@@ -104,13 +102,13 @@ func (stream SliceStream[E]) ForEach(action func(int, E)) SliceStream[E] {
 }
 
 // First Returns the first element in the stream.
-// If the source is empty or nil then E Type default value is returned.
-func (stream SliceStream[E]) First() (elem E) {
+// If the source is empty or nil then E Type default value is returned. ok return false
+func (stream SliceStream[E]) First() (elem E, ok bool) {
 	stream.evaluation()
 	if len(stream.source) == 0 {
 		return
 	}
-	return stream.source[0]
+	return stream.source[0], true
 }
 
 // FindFunc Returns the index of the first element in the stream that matches the provided predicate.
@@ -143,22 +141,27 @@ func (stream SliceStream[E]) Filter(predicate func(E) bool) SliceStream[E] {
 // Insert inserts the values source... into s at index
 // If index is out of range then use Append to the end
 func (stream SliceStream[E]) Insert(index int, elements ...E) SliceStream[E] {
-	stream.evaluation()
 	if len(stream.source) <= index {
 		return stream.Append(elements...)
 	}
+	stream.evaluation()
 	stream.source = slices.Insert(stream.source, index, elements...)
 	return stream
 }
 
 // Delete Removes the elements s[i:j] from this stream, returning the modified stream.
+// If j > len(slice) then j = len(slice)
+// If i > j then swap i, j = j, i
 // If the source is empty or nil then do nothing
 func (stream SliceStream[E]) Delete(i, j int) SliceStream[E] {
 	stream.evaluation()
-	if len(stream.source) == 0 {
-		return stream
+	if i > j {
+		i, j = j, i
 	}
-	stream.source = slices.Delete(stream.source, i, j)
+	if j > len(stream.source) {
+		j = len(stream.source)
+	}
+	stream.source = append(stream.source[:i], stream.source[j:]...)
 	return stream
 }
 
@@ -200,37 +203,39 @@ func (stream SliceStream[E]) Map(mapper MapperFunc[E]) SliceStream[E] {
 
 // MaxFunc Returns the maximum element of this stream.
 // - less: return a > b
-// If the source is empty or nil then E Type default value is returned.
-func (stream SliceStream[E]) MaxFunc(less func(a, b E) bool) (max E) {
+// If the source is empty or nil then E Type default value is returned. ok return false
+func (stream SliceStream[E]) MaxFunc(less func(a, b E) bool) (max E, ok bool) {
 	stream.evaluation()
+	if len(stream.source) == 0 {
+		return
+	}
 	for i, v := range stream.source {
 		if less(v, max) || i == 0 {
 			max = v
 		}
 	}
-	return max
+	return max, true
 }
 
 // MinFunc Returns the minimum element of this stream.
 // - less: return a < b
-// If the source is empty or nil then E Type default value is returned.
-func (stream SliceOrderedStream[E]) MinFunc(less func(a, b E) bool) (min E) {
+// If the source is empty or nil then E Type default value is returned. ok return false
+func (stream SliceOrderedStream[E]) MinFunc(less func(a, b E) bool) (min E, ok bool) {
 	stream.evaluation()
+	if len(stream.source) == 0 {
+		return
+	}
 	for i, v := range stream.source {
 		if less(v, min) || i == 0 {
 			min = v
 		}
 	}
-	return min
+	return min, true
 }
 
 // Reduce Returns a source consisting of the elements of this stream.
 func (stream SliceStream[E]) Reduce(accumulator func(E, E) E) (result E) {
 	stream.evaluation()
-	if len(stream.source) == 0 {
-		return result
-	}
-
 	for _, v := range stream.source {
 		result = accumulator(result, v)
 	}

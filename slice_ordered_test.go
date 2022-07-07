@@ -60,37 +60,44 @@ func TestSliceOrderedMax(t *testing.T) {
 		name  string
 		input []int
 		want  int
+		ok    bool
 	}{
 		{
 			name:  "case",
 			input: []int{1, 2, 1, 5},
 			want:  5,
+			ok:    true,
 		},
 		{
 			name:  "case",
 			input: []int{-1, -2, -1, -5},
 			want:  -1,
+			ok:    true,
 		},
 		{
 			name:  "case",
 			input: []int{10, 2, 1, 5},
 			want:  10,
+			ok:    true,
 		},
 		{
 			name:  "empty",
 			input: []int{},
 			want:  0,
+			ok:    false,
 		},
 		{
 			name:  "nil",
 			input: nil,
 			want:  0,
+			ok:    false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := NewSliceByOrdered(tt.input).Max()
+			got, ok := NewSliceByOrdered(tt.input).Max()
 			assert.Equal(t, tt.want, got)
+			assert.Equal(t, tt.ok, ok)
 		})
 	}
 }
@@ -100,37 +107,45 @@ func TestSliceOrderedMin(t *testing.T) {
 		name  string
 		input []int
 		want  int
+		ok    bool
 	}{
 		{
 			name:  "case",
 			input: []int{1, 2, 1, 5},
 			want:  1,
+			ok:    true,
 		},
 		{
 			name:  "case",
 			input: []int{10, 2, 3, 1},
 			want:  1,
+			ok:    true,
 		},
 		{
 			name:  "case",
 			input: []int{-1, -2, -3, -1},
 			want:  -3,
+			ok:    true,
 		},
 		{
 			name:  "empty",
 			input: []int{},
 			want:  0,
+			ok:    false,
 		},
 		{
 			name:  "nil",
 			input: nil,
 			want:  0,
+			ok:    false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := NewSliceByOrdered(tt.input).Min()
+			got, ok := NewSliceByOrdered(tt.input).Min()
 			assert.Equal(t, tt.want, got)
+			assert.Equal(t, tt.ok, ok)
+
 		})
 	}
 }
