@@ -988,31 +988,35 @@ func TestSliceReduce(t *testing.T) {
 	tests := []struct {
 		name        string
 		input       []int
+		init        int
 		accumulator func(int, int) int
 		want        int
 	}{
 		{
 			name:        "case",
 			input:       []int{1, 2, 1, 10},
+			init:        -1,
 			accumulator: func(i int, j int) int { return i + j },
-			want:        14,
+			want:        13,
 		},
 		{
 			name:        "empty",
 			input:       []int{},
+			init:        0,
 			accumulator: func(i int, j int) int { return i + j },
 			want:        0,
 		},
 		{
 			name:        "nil",
 			input:       nil,
+			init:        10,
 			accumulator: func(i int, j int) int { return i + j },
-			want:        0,
+			want:        10,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := NewSlice(tt.input).Reduce(tt.accumulator)
+			got := NewSlice(tt.input).Reduce(tt.init, tt.accumulator)
 			assert.Equal(t, tt.want, got)
 		})
 	}

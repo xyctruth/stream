@@ -234,7 +234,7 @@ func (stream SliceOrderedStream[E]) MinFunc(less func(a, b E) bool) (min E, ok b
 }
 
 // Reduce Returns a source consisting of the elements of this stream.
-func (stream SliceStream[E]) Reduce(accumulator func(E, E) E) (result E) {
+func (stream SliceStream[E]) Reduce(result E, accumulator func(E, E) E) E {
 	stream.evaluation()
 	for _, v := range stream.source {
 		result = accumulator(result, v)
