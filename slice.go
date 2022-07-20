@@ -141,10 +141,10 @@ func (stream SliceStream[E]) Filter(predicate func(E) bool) SliceStream[E] {
 // Insert inserts the values source... into s at index
 // If index is out of range then use Append to the end
 func (stream SliceStream[E]) Insert(index int, elements ...E) SliceStream[E] {
+	stream.evaluation()
 	if len(stream.source) <= index {
 		return stream.Append(elements...)
 	}
-	stream.evaluation()
 	stream.source = slices.Insert(stream.source, index, elements...)
 	return stream
 }
