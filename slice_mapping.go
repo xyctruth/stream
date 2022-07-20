@@ -33,7 +33,7 @@ func (stream SliceMappingStream[E, MapE, ReduceE]) Map(mapper func(E) MapE) Slic
 }
 
 // Reduce Returns a source consisting of the elements of this stream.
-func (stream SliceMappingStream[E, MapE, ReduceE]) Reduce(accumulator func(ReduceE, E) ReduceE) (result ReduceE) {
+func (stream SliceMappingStream[E, MapE, ReduceE]) Reduce(result ReduceE, accumulator func(result ReduceE, elem E) ReduceE) ReduceE {
 	stream.evaluation()
 	if len(stream.source) == 0 {
 		return result
