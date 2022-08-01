@@ -31,7 +31,7 @@ func (pipe *Pipeline[E]) evaluation() {
 }
 
 func (pipe *Pipeline[E]) evaluationBool(terminal Stage[E, bool]) *bool {
-	ret := pipelineRun(pipe, wrapTerminal[E, bool](pipe.stages, terminal))
+	ret := pipelineRun(pipe, wrapTerminal(pipe.stages, terminal))
 	if len(ret) > 0 {
 		return &ret[0]
 	}
@@ -39,7 +39,7 @@ func (pipe *Pipeline[E]) evaluationBool(terminal Stage[E, bool]) *bool {
 }
 
 func (pipe *Pipeline[E]) evaluationInt(terminal Stage[E, int]) *int {
-	ret := pipelineRun(pipe, wrapTerminal[E, int](pipe.stages, terminal))
+	ret := pipelineRun(pipe, wrapTerminal(pipe.stages, terminal))
 	if len(ret) > 0 {
 		return &ret[0]
 	}

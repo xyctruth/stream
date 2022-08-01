@@ -28,7 +28,7 @@ func (stream SliceMappingStream[E, MapE, ReduceE]) Map(mapper func(E) MapE) Slic
 	terminal := func(index int, v E) (isReturn bool, isComplete bool, ret MapE) {
 		return true, false, mapper(v)
 	}
-	ret := pipelineRun(stream.Pipeline, wrapTerminal[E, MapE](stream.stages, terminal))
+	ret := pipelineRun(stream.Pipeline, wrapTerminal(stream.stages, terminal))
 	return NewSliceByMapping[MapE, MapE, ReduceE](ret)
 }
 

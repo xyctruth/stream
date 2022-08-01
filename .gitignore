@@ -16,7 +16,10 @@
 
 *.db
 
+# ide
 .idea
 .DS_Store
+.vscode
 
+# temporary file
 cover.html
