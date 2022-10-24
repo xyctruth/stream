@@ -3,7 +3,7 @@ module github.com/xyctruth/stream
 go 1.18
 
 require (
-	github.com/stretchr/testify v1.8.0
+	github.com/stretchr/testify v1.8.1
 	golang.org/x/exp v0.0.0-20220303212507-bbda1eaf7a17
 )
 
